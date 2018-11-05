@@ -1,0 +1,10 @@
+data-path: data
+contexts-path: contexts
+library-path: data/library
+images-prefix: prefix/
+docker-registry-host: docker-registry-host:444/
+docker-images-push-prefix: library/
+docker-images-push-tag: :master
+docker-compose-version: 2.0
+github-repository-path: git@github.com:path/
+base-branch: develop

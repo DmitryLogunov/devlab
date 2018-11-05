@@ -1,0 +1,12 @@
+*.log
+.idea
+.ssh-key-path
+.current-context
+logs
+.env
+.config
+data
+devlab
+!data/library
+!data/default-context.yml
+
