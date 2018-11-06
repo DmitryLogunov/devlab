@@ -1,0 +1,79 @@
+
+setup
+  - #Call
+    -- ask would user prefer set config parameters from .config.template interactively or manually (with creating .config)
+    -- add creating .config dialog if user wants
+    -- notice that user should set default-context-settings.yml
+    -- suggest to login npm (to private npm registry) if need (interactive dialog)
+    -- suggest to login docker registry if need (interactive dialog)
+    -- copy ssh-key path to .ssh-key-path
+
+context
+  - #Create
+    -- create folder with setting.yml as copy of default context settings.yaml
+    -- as option copy settings.yml from other context
+  - #Set
+    -- check if .config is set (if not => warning and exit)
+    -- check if context settings.yml exists => create if not exists (suggest to create from other context or 
+       from default settings.yml, then notice to update settings.yml and exit)
+    -- setup current context    
+    -- merge settings.yml with parent default settings.yml files
+    -- DONE: clone or refresh services directories 
+    -- create or refresh docker-compose files (system, application)
+       -- if not exist => create
+       -- if exist => delete & create
+    -- check services dir which exist but are not included in settings.yml => commit, ask to push and delete 
+  - #Up 
+  - #Down
+  - #Restart
+  - #Logs
+  - #Console
+  - #Status
+  - #Git
+
+images
+  - #Build    
+  - #Clean
+  - #Rebuild
+  - #Run
+
+----------------------------------------------- Second stage ----------------------------------------------------------
+
+installer
+
+help-cli
+  - default-context-settings.yml description
+  - .config description
+  - commands
+  - readme
+
+tests
+
+system-tools
+  - #Kafkacat
+  - #Adminer
+  - #NatsClient 
+  - #RedisDashboard 
+  ...
+
+deploy-tools
+  - #Kubernetes
+    -- push images
+    -- pull images
+    -- helm (create/upgrade/delete namespace, get pods, logs, exec, proxy)        
+
+devlab-dashboard   
+  - #Help
+  - #Settings  
+  by contexts:   
+    - #Settings
+    - #Services
+    - #Commands
+    - #Status
+    - #Logs
+    - #Tests
+  
+
+
+    
+    
