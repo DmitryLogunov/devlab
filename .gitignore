@@ -5,8 +5,7 @@
 logs
 .env
 .config
-data
 devlab
-!data/library
-!data/default-context.yml
+data/tasks
+
 
