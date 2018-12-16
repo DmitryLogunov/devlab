@@ -52,7 +52,7 @@ func Set(contextName string) (err error) {
     logger.Header(strings.ToUpper(serviceName))
 
     isServiceDirExists, _ :=  files.IsExists("./" + contextServicesDir + "/serviceName") 
-    
+        
     if !isServiceDirExists {      
       services.Clone(contextServicesDir, serviceName, config["github-repository-path"], serviceParams["github-path"] )
     }
