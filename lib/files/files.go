@@ -95,10 +95,10 @@ func ReadMainConfig() (config map[string]string, err error) {
   
   configData, err := ReadTextFile(pathToConfig)
   if errors.CheckAndReturnIfError(err) { return  make(map[string]string), err }
-  
+
   config, err = yml.ParseOneLevelYAML(configData)
   if errors.CheckAndReturnIfError(err) { return  make(map[string]string), err }
-  
+
   return
 }
 

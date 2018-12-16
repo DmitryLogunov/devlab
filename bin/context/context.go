@@ -28,7 +28,7 @@ func Set(contextName string) (err error) {
   }
 
   // Read context settings
-  context, err := files.ReadContextConfig("./" + config["contexts-path"] + "/" + contextName + "/settings.yml")
+  context, err := files.ReadContextConfig(contextSettings)
   if errors.CheckAndReturnIfError(err) { return }
 
   // Check context services dir and create it if need
@@ -39,12 +39,16 @@ func Set(contextName string) (err error) {
     files.CreateDir("./" + contextServicesDir)
   }
 
+  // Set task base branch
   taskBaseBranch := context["context"]["task"]["base-branch"]
   if taskBaseBranch == "" {
     taskBaseBranch = config["base-branch"]
   }
 
-  for serviceName, serviceParams := range context["application-services"] { 
+  // Check services repo and clone/refresh it if need
+  applicationServices := context["applicaton-services"]
+  for serviceName, serviceParams := range applicationServices { 
+
     logger.Header(strings.ToUpper(serviceName))
 
     isServiceDirExists, _ :=  files.IsExists("./" + contextServicesDir + "/serviceName") 

@@ -12,6 +12,6 @@ func GitCommand(serviceDir string, command string)  (result string, err error) {
     "sh", 
     "-c", 
 		"( cd " + serviceDir + " && " + command + ")" ).Output()
-		
+	
 	return string(out), err
 }
