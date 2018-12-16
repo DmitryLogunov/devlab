@@ -1,0 +1,54 @@
+version: '2'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: wurstmeister/kafka
+    links:
+      - zookeeper
+    command: /bin/bash -c "/broker_helpers/configure_and_start_broker.sh"
+    volumes:
+      - ./kafka/helpers/configure_and_start_broker.sh:/broker_helpers/configure_and_start_broker.sh
+ #   environment:
+ #     - KAFKA_CREATE_TOPICS=getconfig:1:1,config:1:1,halo:1:1,logflush:1:1
+    ports:
+      - 9092:9092
+
+  kafka_manager:
+    image: sheepkiller/kafka-manager
+    environment:
+      - ZK_HOSTS=zookeeper:2181
+      - KM_ARGS=-Djava.net.preferIPv4Stack=true
+    ports:
+      - 9000:9000
+    links:
+      - zookeeper
+      - kafka
+
+  consul:
+    image: consul
+    ports:
+      - 8500:8500
+
+  postgres:
+    image: postgres
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/pg_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_PASSWORD=example
+    ports:
+      - 5432:5432
+
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
+
+networks:
+  default:
+    external:
+      name: bedrock

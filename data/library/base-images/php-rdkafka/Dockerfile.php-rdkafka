@@ -1,0 +1,32 @@
+FROM php:7.2-fpm
+
+RUN apt-get update
+
+# git
+RUN apt-get install -y git
+RUN apt-get install -y wget
+
+# composer
+RUN curl -sS https://getcomposer.org/installer -o composer-setup.php
+RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+
+# all builds do in /usr/app/build dir
+RUN mkdir /usr/build
+WORKDIR  /usr/build
+
+# rdkafka as php extention
+RUN git clone https://github.com/edenhill/librdkafka.git librdkafka
+WORKDIR  /usr/build/librdkafka
+RUN ./configure && make && make install
+RUN pecl install rdkafka && docker-php-ext-enable rdkafka
+RUN pecl config-set php_ini /usr/local/etc/php/php.ini
+
+RUN rm -rf /usr/build
+
+COPY ./composer.json /usr/app/composer.json
+WORKDIR /usr/app
+
+RUN mkdir /usr/app/src
+
+# installing dependencies
+RUN composer update
