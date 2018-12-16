@@ -25,7 +25,7 @@ func Clone( contextServicesDir string, serviceName string, githabHost string, re
   }
 
   if !isServiceDirExists {
-    logger.Text("Cloning from github ... ")
+    logger.Text("Cloning from github: " + githabHost + relativeGithubPath + " ...")
     exec.GitCommand(servicesDir, "git clone " + githabHost + relativeGithubPath + " " + serviceName)
   }
 }
@@ -70,9 +70,11 @@ func CheckoutOrCreate(contextServicesDir string, serviceName string, checkoutBra
   currentBranch, _ := exec.GitCommand(serviceDir, "git symbolic-ref --short HEAD")
  
   /* checkoutBranch exists as remote */
-  isCheckoutBranchExistsAsRemote, _ := strconv.ParseInt(numCheckoutBranchExistsAsRemote, 10, 8) 
-  if isCheckoutBranchExistsAsRemote > 0 {
+  isCheckoutBranchExistsAsRemote := numCheckoutBranchExistsAsRemote != "0"
+
+  if isCheckoutBranchExistsAsRemote {
     if currentBranch != checkoutBranch {
+      logger.Text("Checking out to '" + checkoutBranch + " branch\n")
       exec.GitCommand(serviceDir, "git checkout " + checkoutBranch)
     }
 
@@ -85,29 +87,29 @@ func CheckoutOrCreate(contextServicesDir string, serviceName string, checkoutBra
 
       logger.Info("Refreshing local service folder from remote branch origin/%s.", checkoutBranch)
       exec.GitCommand(serviceDir, "git fetch origin && git reset --hard origin/" + checkoutBranch)
-    } 
+    }
+
+    return 
   }
 
   /* checkoutBranch not exists as remote */
-  if int(isCheckoutBranchExistsAsRemote) == 0 {
-    if currentBranch != checkoutBranch {      
-      numCheckoutBranchExistsAsLocal, _ := exec.GitCommand(serviceDir, "git branch | grep -c " + checkoutBranch)
-      isCheckoutBranchExistsAsLocal, _ := strconv.ParseInt(numCheckoutBranchExistsAsLocal, 10, 8) 
+  if currentBranch != checkoutBranch {      
+    numCheckoutBranchExistsAsLocal, _ := exec.GitCommand(serviceDir, "git branch | grep -c " + checkoutBranch)
+    isCheckoutBranchExistsAsLocal, _ := strconv.ParseInt(numCheckoutBranchExistsAsLocal, 10, 8) 
 
-      if isCheckoutBranchExistsAsLocal == 0 {
-        logger.Info("Creating new local branch '%s' from remote branch 'origin/%s'", checkoutBranch, baseBranch) 
+    if isCheckoutBranchExistsAsLocal == 0 {
+      logger.Info("Creating new local branch '%s' from remote branch 'origin/%s'", checkoutBranch, baseBranch) 
 
-        exec.GitCommand(serviceDir, "git fetch origin && git checkout " + baseBranch + " git reset --hard origin/" + baseBranch)
-        exec.GitCommand(serviceDir, "git checkout -b " + checkoutBranch)
-      } else {
-        exec.GitCommand(serviceDir, "git checkout" + checkoutBranch)
-      }       
-    }  
+      exec.GitCommand(serviceDir, "git fetch origin && git checkout " + baseBranch + " git reset --hard origin/" + baseBranch)
+      exec.GitCommand(serviceDir, "git checkout -b " + checkoutBranch)
+    } else {
+      exec.GitCommand(serviceDir, "git checkout" + checkoutBranch)
+    }       
+  }  
 
-    if checkoutBranch != "master" && checkoutBranch != "develop" {
-      logger.Info("Pushing new local branch '%s' to remote git server", checkoutBranch)
-      exec.GitCommand(serviceDir, "git push origin " + checkoutBranch) 
-    }
+  if checkoutBranch != "master" && checkoutBranch != "develop" {
+    logger.Info("Pushing new local branch '%s' to remote git server", checkoutBranch)
+    exec.GitCommand(serviceDir, "git push origin " + checkoutBranch) 
   }
 }
 
