@@ -13,14 +13,28 @@ func Set(contextName string) (err error) {
   config, err := files.ReadMainConfig()
   if errors.CheckAndReturnIfError(err) { return }
 
+  // Check context dir and create it if need  
+  contextDir := "./" + config["contexts-path"] + "/" + contextName 
+  isContextDirExists, _ :=  files.IsExists("./" + contextDir)
+  if !isContextDirExists {
+    files.CreateDir("./" + contextDir)
+  }
+  
+  // Check context settings file and create it if need  
+  contextSettings := contextDir + "/settings.yml"
+  isContextSettingsExists, _ :=  files.IsExists(contextSettings)
+  if !isContextSettingsExists {
+    files.Copy("./" + config["data-path"] + "/default-context.yml", contextSettings) 
+  }
+
+  // Read context settings
   context, err := files.ReadContextConfig("./" + config["contexts-path"] + "/" + contextName + "/settings.yml")
   if errors.CheckAndReturnIfError(err) { return }
 
+  // Check context services dir and create it if need
   contextServicesDir := config["contexts-path"] + "/" + contextName + "/services"
-
   isContextServicesDirExists, err :=  files.IsExists("./" + contextServicesDir)
   if errors.CheckAndReturnIfError(err) { return }
-
   if !isContextServicesDirExists {
     files.CreateDir("./" + contextServicesDir)
   }

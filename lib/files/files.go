@@ -7,8 +7,10 @@ import (
   "devlab/lib/errors"
   "devlab/lib/yml"
   "devlab/lib/logger"
+  "reflect"
 )
-
+/**
+*/
 func AbsolutePath(relativePath string) (absolutePath string, err error) {
   dir, err := filepath.Abs(relativePath)
   if  errors.CheckAndReturnIfError(err) { return }
@@ -16,6 +18,8 @@ func AbsolutePath(relativePath string) (absolutePath string, err error) {
   return dir, nil
 }
 
+/**
+*/
 func ReadTextFile(path string) (resultString string, err error) {   
   resultString = ""
 
@@ -37,6 +41,8 @@ func ReadTextFile(path string) (resultString string, err error) {
   return
 }
 
+/**
+*/
 func IsExists(path string) (bool, error) {
   filepath, err := AbsolutePath(path)
   if errors.CheckAndReturnIfError(err) { return false, err}
@@ -47,6 +53,8 @@ func IsExists(path string) (bool, error) {
   return true, err
 }
 
+/**
+*/
 func CreateDir(path string) error {
   filepath, err := AbsolutePath(path)
   if errors.CheckAndReturnIfError(err) { return err }
@@ -54,7 +62,31 @@ func CreateDir(path string) error {
   return os.MkdirAll(filepath, 0755)
 }
 
+/* Copy the src file to dst. Any existing file will be overwritten and will not
+   copy file attributes.
+*/ 
+func Copy(src, dst string) error {
+  in, err := os.Open(src)
+  if err != nil {
+      return err
+  }
+  defer in.Close()
 
+  out, err := os.Create(dst)
+  if err != nil {
+      return err
+  }
+  defer out.Close()
+
+  _, err = io.Copy(out, in)
+  if err != nil {
+      return err
+  }
+  return out.Close()
+}
+
+/*
+*/
 func ReadMainConfig() (config map[string]string, err error) {
   _, err =  IsExists("/.config")
   if errors.CheckAndReturnIfError(err) { return make(map[string]string), err }
@@ -156,3 +188,48 @@ func indentInSpaces(indent int) (spacesIndent string) {
   } 
   return spacesIndent
 }
+
+
+type Pair struct {
+  key string
+  value *interface{}
+}
+
+func (p Pair) writeAppendYAMLFile(filenamePath string, depth int) {
+  v := reflect.ValueOf(*(p.value))
+  switch  v.Kind() {
+    case reflect.String:
+      WriteAppendFileWithIndent(filenamePath, p.key + ": " + v.Elem().String(), depth)
+    
+    case reflect.Slice, reflect.Array:
+      WriteAppendFileWithIndent(filenamePath, p.key + ": ", depth)
+      for i := 0; i < v.NumField(); i++ {
+        item := v.Field(i)        
+        if reflect.ValueOf(item).Kind() == reflect.String {
+          WriteAppendFileWithIndent(filenamePath, "- " + reflect.ValueOf(item).Elem().String(), depth + 2)
+        } else {
+          WriteAppendFileWithIndent(filenamePath, " - the value couldn't be printed", depth + 2) 
+        }
+      }
+        
+    case reflect.Map:
+      WriteAppendFileWithIndent(filenamePath, p.key + ": ", depth)
+      for _, key := range v.MapKeys() {
+       // (Pair{key.Elem().String(), v.MapIndex(key).Pointer()}).writeAppendYAMLFile(filenamePath, depth + 2)
+        // (Pair{key.Elem().String(), &"unknown value"}).writeAppendYAMLFile(filenamePath, depth + 2)
+        WriteAppendFileWithIndent(filenamePath, key.Elem().String() + ": unknown value", depth +2) 
+      }
+      
+    default:
+      WriteAppendFileWithIndent(filenamePath, p.key + ": the value couldn't be printed", depth)    
+  }
+}
+
+type YamlTree []Pair
+
+func (t YamlTree) WriteYaml(filenamePath string) {
+  for _, pair := range t {
+    pair.writeAppendYAMLFile(filenamePath, 0) 
+  }
+}
+
