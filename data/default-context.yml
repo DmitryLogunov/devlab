@@ -10,7 +10,7 @@ context:
     name:
     description:
     maintainer:
-    base-branch: 
+    base-branch: develop
   build:    
     version:  
     tag:       
@@ -30,32 +30,25 @@ system-services:
 applicaton-services:    
   dlp-gateway-initiator:
     enabled: true
-    branch: master
+    branch: feature-branch
   dlp-gateway-query:
     enabled: true
-    branch: master
   dlp-gateway-command:
     enabled: true
-    branch: master
   dlp-service-config:
     enabled: true
-    branch: master
     github-path: dlp-service-config-js.git
     docker-compose: docker-compose.config.yml 
   dlp-service-usermanagement:
     enabled: true
-    branch: master
   dlp-service-emailmanagement:
     enabled: true
-    branch: master
     github-path: dlp-service-emailmanagement-js.git    
   dlp-service-scheduling:
     enabled: true
-    branch: master
   dlp-service-tests:
     enabled: true
     github-path: dlp-service-tests-ts.git    
-    branch: master
 dependencies:
   dlp-service-kvps:
     branch: master
