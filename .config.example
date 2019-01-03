@@ -1,9 +1,15 @@
-data-path: data
-contexts-path: contexts
-library-path: data/library
-images-prefix: prefix/
-docker-registry-host: docker-registry-host:444/
-docker-images-push-prefix: library/
-docker-compose-version: 2.0
-github-repository-path: git@github.com:path/
-base-branch: develop
+description:
+  maintainer: ""
+  configuration: default.yml
+paths:
+  data: data
+  contexts: contexts  
+  configurations: data/configurations
+  contexts-templates: data/contexts-templates    
+docker:
+  registry-host: harbor01.dev1.cgdlp.io:444/
+  images-push-prefix: library/
+  docker-compose-version: 2.0
+git:
+  git-server-host: git@github.com:City-and-Guilds-Group/
+

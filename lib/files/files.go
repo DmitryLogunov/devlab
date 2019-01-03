@@ -3,6 +3,7 @@ package files
 import (
   "io"
   "os"
+  "text/template"
   "path/filepath"
   "devlab/lib/errors"
   "devlab/lib/yml"
@@ -85,23 +86,67 @@ func Copy(src, dst string) error {
   return out.Close()
 }
 
-/*
+/** Render text template   
 */
-func ReadMainConfig() (config map[string]string, err error) {
+func RenderTextTemplate(src, dst string, params interface{}) error { 
+  out, err := os.Create(dst)
+  if err != nil {
+      return err
+  }
+  defer out.Close()
+  
+  sourceTemplate, _ := template.ParseFiles(src)
+  return sourceTemplate.Execute(out, params)  
+}
+
+
+/**
+*/
+func ReadMainConfig() (config map[string]map[string]string, err error) {
   _, err =  IsExists("/.config")
-  if errors.CheckAndReturnIfError(err) { return make(map[string]string), err }
+  if errors.CheckAndReturnIfError(err) { return make(map[string]map[string]string), err }
 
   pathToConfig, err := AbsolutePath(".config")
   
   configData, err := ReadTextFile(pathToConfig)
-  if errors.CheckAndReturnIfError(err) { return  make(map[string]string), err }
+  if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]string), err }
 
-  config, err = yml.ParseOneLevelYAML(configData)
-  if errors.CheckAndReturnIfError(err) { return  make(map[string]string), err }
+  config, err = yml.ParseTwoLevelYAML(configData)
+  if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]string), err }
 
   return
 }
 
+
+/**
+*
+*/
+func Delete(path string) (err error) {
+  isFileExists, _ :=  IsExists(path)
+  if !isFileExists { return }
+
+  absolutePath, _ := AbsolutePath(path)
+  
+  return os.Remove(absolutePath)
+}
+
+/**
+*
+*/
+func ReadTwoLevelYaml(relativePathToYamlFile string) (data map[string]map[string]string, err error) {
+  dataYAML, err := ReadTextFile(relativePathToYamlFile)
+	if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]string), err }
+  
+	data, err = yml.ParseTwoLevelYAML(dataYAML)
+	if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]string), err }
+
+	return
+}
+
+
+/**
+*
+*/
 func ReadContextConfig(relativePathToContextConfigFile string) (context map[string]map[string]map[string]string, err error) {
 	contextData, err := ReadTextFile(relativePathToContextConfigFile)
 	if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]map[string]string), err }

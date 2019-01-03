@@ -1,0 +1,25 @@
+dlp-gateway-initiator:
+  enabled: true
+  getting-image-strategy: build # build | pull
+dlp-gateway-command:
+  enabled: true
+  getting-image-strategy: build
+dlp-service-config:
+  enabled: true
+  getting-image-strategy: build
+  github-path: dlp-service-config-js.git
+  docker-compose: docker-compose.config.yml 
+dlp-service-usermanagement:
+  enabled: true
+  getting-image-strategy: build
+dlp-service-emailmanagement:
+  enabled: true
+  getting-image-strategy: build
+  github-path: dlp-service-emailmanagement-js.git    
+dlp-service-scheduling:
+  enabled: true
+  getting-image-strategy: build
+dlp-service-tests:
+  enabled: true
+ getting-image-strategy: build
+  github-path: dlp-service-tests-ts.git

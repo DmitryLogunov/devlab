@@ -1,0 +1,16 @@
+kafka: 
+  enabled: true
+nats:
+  enabled: false
+redis:
+  enables: true    
+consul: 
+  enabled: true
+postrgres: 
+  enabled: true
+adminer: 
+  enabled: true
+  depends-on: postrgres    
+keycloak: 
+  enabled: true
+  depends-on: postrgres

@@ -6,6 +6,6 @@ logs
 .env
 .config
 devlab
-data/tasks
+contexts
 
 

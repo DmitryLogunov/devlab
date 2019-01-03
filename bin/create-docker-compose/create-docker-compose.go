@@ -8,6 +8,6 @@ import (
 func Call(contextName string) {
 	config, _ := files.ReadMainConfig()
 	dockerComposeData := DockerComposeFileBuilder.CreateDockerComposeObjectExample()
-	contextDir := config["contexts-path"] + "/" + contextName
+	contextDir := config["paths"]["contexts"] + "/" + contextName
 	DockerComposeFileBuilder.Create("./" + contextDir + "/docker-compose.application.yml", dockerComposeData)
 }

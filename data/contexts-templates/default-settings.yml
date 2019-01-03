@@ -1,0 +1,22 @@
+description:
+  name: {{ if .Name }} {{ .Name }} {{ else }} task-name {{ end }} 
+  info: 
+  maintainer: {{ if .Description.Maintainer }} {{ .Description.Maintainer }} {{ end }} 
+  created:  {{ if .Description.Created }} {{ .Description.Created }} {{ end }}  
+git:  
+  base-branch: {{ if .Git.BaseBranch }} {{ .Git.BaseBranch }} {{ end }} 
+docker:    
+  images-prefix: {{ if .Docker.ImagesPrefix }} {{ .Docker.ImagesPrefix }} {{ end }} 
+  network:  {{ if .Docker.Network }} {{ .Docker.Network }} {{ end }}  
+paths:
+  templates: {{ if .Paths.Templates }} {{ .Paths.Templates }} {{ end }}  
+building:   
+  version: 
+  tag:  {{ .Name }}    
+  template: {{ if .Building.Template }} {{ .Building.Template }} {{ end }}  
+deploying:
+  template: {{ if .Deploying.Template }} {{ .Deploying.Template }} {{ end }}   
+system-services:
+  template: {{ if .SystemServices.Template }} {{ .SystemServices.Template }} {{ end }} 
+applicaton-services: 
+  template:  {{ if .ApplicatonServices.Template }} {{ .ApplicatonServices.Template }} {{ end }}       

@@ -1,0 +1,13 @@
+git:  
+  base-branch: develop 
+docker:    
+  images-prefix: core 
+  network-prefix:  core-bedrock-network  
+building:        
+  template: default.yml 
+deploying:
+  template: default.yml 
+system-services:
+  template: default.yml
+applicaton-services: 
+  template: default.yml       
