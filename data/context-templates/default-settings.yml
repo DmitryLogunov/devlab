@@ -18,5 +18,5 @@ deploying:
   template: {{ if .Deploying.Template }} {{ .Deploying.Template }} {{ end }}   
 system-services:
   template: {{ if .SystemServices.Template }} {{ .SystemServices.Template }} {{ end }} 
-applicaton-services: 
-  template:  {{ if .ApplicatonServices.Template }} {{ .ApplicatonServices.Template }} {{ end }}       
+application-services: 
+  template:  {{ if .ApplicationServices.Template }} {{ .ApplicationServices.Template }} {{ end }}       

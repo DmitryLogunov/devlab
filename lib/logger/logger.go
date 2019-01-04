@@ -19,9 +19,13 @@ func Text(text string) {
 }
 
 func Warn(textTemplate string, params ...interface{} ) {
-  colorPrint.Yellow("\n" + INDENT +  "WARNING " + textTemplate, params...)
+  colorPrint.Yellow("\n" + INDENT +  "WARNING: " + textTemplate, params...)
 }
 
 func Debug(textTemplate string, params ...interface{} ) {
-  colorPrint.Magenta("\n" + INDENT +  "DEBUG " + textTemplate, params...)
+  colorPrint.Magenta("\n" + INDENT +  "DEBUG: " + textTemplate, params...)
+}
+
+func Error(textTemplate string, params ...interface{} ) {
+  colorPrint.Red("\n" + INDENT +  "ERROR: " + textTemplate, params...)
 }

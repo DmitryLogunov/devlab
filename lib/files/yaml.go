@@ -1,104 +1,12 @@
 package files
 
 import (
-  "io"
   "os"
-  "text/template"
-  "path/filepath"
   "devlab/lib/errors"
   "devlab/lib/yml"
-  "devlab/lib/logger"
+//  "devlab/lib/logger"
   "reflect"
 )
-/**
-*/
-func AbsolutePath(relativePath string) (absolutePath string, err error) {
-  dir, err := filepath.Abs(relativePath)
-  if  errors.CheckAndReturnIfError(err) { return }
-
-  return dir, nil
-}
-
-/**
-*/
-func ReadTextFile(path string) (resultString string, err error) {   
-  resultString = ""
-
-  filepath, err := AbsolutePath(path)
-  if errors.CheckAndReturnIfError(err) { return }
-
-  file, err := os.Open(filepath)
-  if errors.CheckAndReturnIfError(err) { return }
-  defer file.Close() 
-     
-  data := make([]byte, 64)     
-  for {
-    n, err := file.Read(data)
-    if err == io.EOF { break }
-    resultString += string(data[:n])
-  }
-  
-  err = nil
-  return
-}
-
-/**
-*/
-func IsExists(path string) (bool, error) {
-  filepath, err := AbsolutePath(path)
-  if errors.CheckAndReturnIfError(err) { return false, err}
-
-  _, err = os.Stat(filepath)
-  if err == nil { return true, nil }
-  if os.IsNotExist(err) { return false, nil }
-  return true, err
-}
-
-/**
-*/
-func CreateDir(path string) error {
-  filepath, err := AbsolutePath(path)
-  if errors.CheckAndReturnIfError(err) { return err }
-
-  return os.MkdirAll(filepath, 0755)
-}
-
-/* Copy the src file to dst. Any existing file will be overwritten and will not
-   copy file attributes.
-*/ 
-func Copy(src, dst string) error {
-  in, err := os.Open(src)
-  if err != nil {
-      return err
-  }
-  defer in.Close()
-
-  out, err := os.Create(dst)
-  if err != nil {
-      return err
-  }
-  defer out.Close()
-
-  _, err = io.Copy(out, in)
-  if err != nil {
-      return err
-  }
-  return out.Close()
-}
-
-/** Render text template   
-*/
-func RenderTextTemplate(src, dst string, params interface{}) error { 
-  out, err := os.Create(dst)
-  if err != nil {
-      return err
-  }
-  defer out.Close()
-  
-  sourceTemplate, _ := template.ParseFiles(src)
-  return sourceTemplate.Execute(out, params)  
-}
-
 
 /**
 */
@@ -121,13 +29,27 @@ func ReadMainConfig() (config map[string]map[string]string, err error) {
 /**
 *
 */
-func Delete(path string) (err error) {
-  isFileExists, _ :=  IsExists(path)
-  if !isFileExists { return }
-
-  absolutePath, _ := AbsolutePath(path)
+func ReadContextConfig(relativePathToContextConfigFile string) (context map[string]map[string]map[string]string, err error) {
+	contextData, err := ReadTextFile(relativePathToContextConfigFile)
+	if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]map[string]string), err }
   
-  return os.Remove(absolutePath)
+	context, err = yml.ParseThreeLevelYAML(contextData)
+	if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]map[string]string), err }
+
+	return
+}
+
+/**
+*
+*/
+func ReadOneLevelYaml(relativePathToYamlFile string) (data map[string]string, err error) {
+  dataYAML, err := ReadTextFile(relativePathToYamlFile)
+	if errors.CheckAndReturnIfError(err) { return  make(map[string]string), err }
+  
+	data, err = yml.ParseOneLevelYAML(dataYAML)
+	if errors.CheckAndReturnIfError(err) { return  make(map[string]string), err }
+
+	return
 }
 
 /**
@@ -145,28 +67,15 @@ func ReadTwoLevelYaml(relativePathToYamlFile string) (data map[string]map[string
 
 
 /**
-*
-*/
-func ReadContextConfig(relativePathToContextConfigFile string) (context map[string]map[string]map[string]string, err error) {
-	contextData, err := ReadTextFile(relativePathToContextConfigFile)
-	if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]map[string]string), err }
-  
-	context, err = yml.ParseThreeLevelYAML(contextData)
-	if errors.CheckAndReturnIfError(err) { return  make(map[string]map[string]map[string]string), err }
-
-	return
-}
-
-/**
 * Writes string to the of file
 */
 func WriteAppendFile(filenamePath string, text string) (result int, err error) { 
   absoluteFilenamePath, err := AbsolutePath(filenamePath)
   isFileExists, _ :=  IsExists(filenamePath)
-  logger.Debug(" %s ", absoluteFilenamePath)
+//  logger.Debug(" %s ", absoluteFilenamePath)
 
   if !isFileExists {
-    logger.Debug("text:  %s ", text)
+//    logger.Debug("text:  %s ", text)
     file, _ := os.Create(absoluteFilenamePath)
     defer file.Close() 
   }
@@ -183,17 +92,18 @@ func WriteAppendFile(filenamePath string, text string) (result int, err error) {
 }
 
 /**
-* It adds spaces indent before string anf write this string to the end of file
-*/
-func WriteAppendFileWithIndent(filenamePath string, text string, indent int) (result int, err error) {
-  return WriteAppendFile(filenamePath, indentInSpaces(indent) + text)
-}
-
-/**
 * Writes tree stucture data (with 3 levels) to yaml file
 */
 func WriteYaml(filenamePath string, data interface{}) (err error) {   
   return WriteYamlBranch(filenamePath, data, 0)
+}
+
+
+/**
+* It adds spaces indent before string anf write this string to the end of file
+*/
+func WriteAppendFileWithIndent(filenamePath string, text string, indent int) (result int, err error) {
+  return WriteAppendFile(filenamePath, indentInSpaces(indent) + text)
 }
 
 /**

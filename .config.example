@@ -5,7 +5,7 @@ paths:
   data: data
   contexts: contexts  
   configurations: data/configurations
-  contexts-templates: data/contexts-templates    
+  context-templates: data/context-templates    
 docker:
   registry-host: harbor01.dev1.cgdlp.io:444/
   images-push-prefix: library/

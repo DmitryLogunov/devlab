@@ -30,7 +30,7 @@ type SettingsParametersSystemServices struct {
   Template string
 }
 
-type SettingsParametersApplicatonServices struct {
+type SettingsParametersApplicationServices struct {
   Template string
 }
 
@@ -43,5 +43,5 @@ type SettingsParameters struct {
   Building SettingsParametersBuilding
   Deploying SettingsParametersDeploying
   SystemServices SettingsParametersSystemServices
-  ApplicatonServices SettingsParametersApplicatonServices
+  ApplicationServices SettingsParametersApplicationServices
 }

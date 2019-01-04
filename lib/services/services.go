@@ -33,7 +33,7 @@ func Clone( contextServicesDir string, serviceName string, githabHost string, re
 /**
 * Refreshes git repo service (refreshes service repo, commits or staches changes and checkout to context branch)
 */
-func RefreshGitRepo(contextServicesDir string, serviceName string, contextServiceBranch string, baseBranch string) {
+func RefreshGitRepo(contextServicesDir string, serviceName string, contextServiceBranch string, serviceBaseBranch string) {
   serviceDir, _ := files.AbsolutePath(contextServicesDir + "/" + serviceName)  
 
   if CheckRepoChanges(contextServicesDir, serviceName) {
@@ -61,7 +61,7 @@ func RefreshGitRepo(contextServicesDir string, serviceName string, contextServic
     }          
   }  
 
-  CheckoutOrCreate(contextServicesDir, serviceName, contextServiceBranch, baseBranch)
+  CheckoutOrCreate(contextServicesDir, serviceName, contextServiceBranch, serviceBaseBranch)
 }
 
 func CheckoutOrCreate(contextServicesDir string, serviceName string, checkoutBranch string, baseBranch string) {
@@ -74,7 +74,7 @@ func CheckoutOrCreate(contextServicesDir string, serviceName string, checkoutBra
 
   if isCheckoutBranchExistsAsRemote {
     if currentBranch != checkoutBranch {
-      logger.Text("Checking out to '" + checkoutBranch + " branch\n")
+      logger.Text("Checking out to '" + checkoutBranch + "' branch\n")
       exec.GitCommand(serviceDir, "git checkout " + checkoutBranch)
     }
 

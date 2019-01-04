@@ -9,5 +9,5 @@ deploying:
   template: default.yml 
 system-services:
   template: default.yml
-applicaton-services: 
+application-services: 
   template: default.yml       

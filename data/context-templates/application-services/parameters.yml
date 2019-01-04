@@ -1,0 +1,7 @@
+enabled: # true | false
+github-path: # relative path to git repository e.g. some-repo.git, as default - 'service-name'
+branch: # context branch, as default it will be used the branch from configuration
+getting-image-strategy: # build | pull
+docker-registry-path: # relative path to docker registry,  as default - 'service-name'
+docker-registry-tag: # the tag which should be used for pulling service image from docker-registry
+docker-compose: # special docker-compose file if need, as default: docker-compose.application-services.yml

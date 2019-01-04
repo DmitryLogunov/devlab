@@ -1,0 +1,2 @@
+system-services:  # possible deploying strategy:  docker-network | minikube | remote-kubernetes-cloud
+application-services: # possible deploying strategy: docker-network | minikube | remote-kubernetes-cloud
