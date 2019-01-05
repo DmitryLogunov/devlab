@@ -10,5 +10,6 @@ system-services:
 application-services:
   base-branch: develop
   feature-branch-naming: context-name 
-  mount-source-code-volume-on-deploying: true
-  template: default.yml       
+  mount-source-code-volume-on-deploying: false
+  docker-registry-tag: release.0.1.0
+  template: minimal.yml  

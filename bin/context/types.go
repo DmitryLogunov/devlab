@@ -1,47 +1,49 @@
-package Context
+package context
 
 type SettingsParametersDescription struct {
-  Maintainer string
-  Created string
+	Maintainer string
+	Created    string
 }
 
 type SettingsParametersGit struct {
-  BaseBranch string
+	BaseBranch string
 }
 
 type SettingsParametersDocker struct {
-  ImagesPrefix string
-  Network string
+	ImagesPrefix string
+	Network      string
 }
 
 type SettingsParametersPaths struct {
-  Templates string
+	Templates string
 }
 
 type SettingsParametersBuilding struct {
-  Template string
+	Template string
 }
 
 type SettingsParametersDeploying struct {
-  Template string
+	Template string
 }
 
 type SettingsParametersSystemServices struct {
-  Template string
+	Template string
 }
 
 type SettingsParametersApplicationServices struct {
-  Template string
+	BaseBranch          string
+	FeatureBranchNaming string
+	Template            string
 }
 
 type SettingsParameters struct {
-  Name string
-  Description SettingsParametersDescription
-  Git SettingsParametersGit
-  Docker SettingsParametersDocker
-  Paths SettingsParametersPaths
-  Building SettingsParametersBuilding
-  Deploying SettingsParametersDeploying
-  SystemServices SettingsParametersSystemServices
-  ApplicationServices SettingsParametersApplicationServices
+	Name                string
+	Description         SettingsParametersDescription
+	Git                 SettingsParametersGit
+	Docker              SettingsParametersDocker
+	Paths               SettingsParametersPaths
+	Building            SettingsParametersBuilding
+	Deploying           SettingsParametersDeploying
+	SystemServices      SettingsParametersSystemServices
+	ApplicationServices SettingsParametersApplicationServices
 }

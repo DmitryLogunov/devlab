@@ -7,7 +7,7 @@ dlp-gateway-command:
 dlp-service-config:
   enabled: true
   getting-image-strategy: build
-  github-path: dlp-service-config-js.git
+  git-path: dlp-service-config-js.git
   docker-compose: docker-compose.config.yml 
 dlp-service-usermanagement:
   enabled: true
@@ -15,11 +15,11 @@ dlp-service-usermanagement:
 dlp-service-emailmanagement:
   enabled: true
   getting-image-strategy: build
-  github-path: dlp-service-emailmanagement-js.git    
+  git-path: dlp-service-emailmanagement-js.git    
 dlp-service-scheduling:
   enabled: true
   getting-image-strategy: build
 dlp-service-tests:
   enabled: true
   getting-image-strategy: build
-  github-path: dlp-service-tests-ts.git
+  git-path: dlp-service-tests-ts.git

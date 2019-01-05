@@ -2,9 +2,7 @@ description:
   name: {{ if .Name }} {{ .Name }} {{ else }} task-name {{ end }} 
   info: 
   maintainer: {{ if .Description.Maintainer }} {{ .Description.Maintainer }} {{ end }} 
-  created:  {{ if .Description.Created }} {{ .Description.Created }} {{ end }}  
-git:  
-  base-branch: {{ if .Git.BaseBranch }} {{ .Git.BaseBranch }} {{ end }} 
+  created:  {{ if .Description.Created }} {{ .Description.Created }} {{ end }}   
 docker:    
   images-prefix: {{ if .Docker.ImagesPrefix }} {{ .Docker.ImagesPrefix }} {{ end }} 
   network:  {{ if .Docker.Network }} {{ .Docker.Network }} {{ end }}  
@@ -19,4 +17,6 @@ deploying:
 system-services:
   template: {{ if .SystemServices.Template }} {{ .SystemServices.Template }} {{ end }} 
 application-services: 
+  base-branch: {{ if .ApplicationServices.BaseBranch }} {{ .ApplicationServices.BaseBranch }} {{ end }} 
+  feature-branch-naming:  {{ if .ApplicationServices.FeatureBranchNaming }} {{ .ApplicationServices.FeatureBranchNaming }} {{ end }}
   template:  {{ if .ApplicationServices.Template }} {{ .ApplicationServices.Template }} {{ end }}       
