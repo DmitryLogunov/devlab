@@ -90,3 +90,15 @@ func GetSortedKeysFromYaml(path string) (keys []KeyWithOrder, err error) {
 
 	return
 }
+
+// GetMainConfig returns main config
+func GetMainConfig() (config map[string]map[string]string, err error) {
+	config, err = files.ReadMainConfig()
+	if err != nil {
+		return make(map[string]map[string]string), contextErrors.ErrCouldntReadConfig
+	}
+	if config["paths"]["contexts"] == "" {
+		return make(map[string]map[string]string), contextErrors.ErrNotDefinedContextsPath
+	}
+	return
+}

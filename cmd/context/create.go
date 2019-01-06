@@ -13,100 +13,201 @@ import (
 
 // Create creates a new context
 func Create(contextName string) (err error) {
-	if contextName == "" {
-		return contextErrors.ErrNotDefinedContextName
-	}
-
-	config, err := files.ReadMainConfig()
+	config, contextSettingsPath, defaultSettingsPath,
+		contextSettingsParameters, err := initContextToCreate(contextName)
 	if err != nil {
-		return contextErrors.ErrCouldntReadConfig
-	}
-	if config["paths"]["contexts"] == "" {
-		return contextErrors.ErrNotDefinedContextsPath
+		return
 	}
 
-	// check context dir and create it if need
-	contextDir := "./" + config["paths"]["contexts"] + "/" + contextName
-	if isContextDirExists, _ := files.IsExists(contextDir); !isContextDirExists {
-		files.CreateDir("./" + contextDir)
-	}
-
-	contextSettingsParameters, err := getSettingsParamters(contextName, config)
-	if err != nil {
-		return err
-	}
-
-	if config["paths"]["context-templates"] == "" {
-		return contextErrors.ErrNotDefinedContextsPath
-	}
-	defaultSettingsPath := "./" + config["paths"]["context-templates"] + "/default-settings.yml"
-
-	contextSettingsPath := contextDir + "/context.settings.yml"
 	isContextSettingsExists, _ := files.IsExists(contextSettingsPath)
 	if isContextSettingsExists {
 		logger.Warn("There is settings.yml file in context: %s. This file will be rewrited!", contextSettingsPath)
 		files.Delete(contextSettingsPath)
 	}
 
-	// create context.settings.yml
+	// creates context.settings.yml
 	err = files.RenderTextTemplate(defaultSettingsPath, contextSettingsPath, contextSettingsParameters)
 	if err != nil {
-		return err
+		return
 	}
 
-	// create builing.settings.yml
+	// creates builing.settings.yml
 	err = createContextBlockSettingsFile(contextName, config, "building")
 	if err != nil {
-		return err
+		return
 	}
 
-	// create deploying.settings.yml
+	// creates deploying.settings.yml
 	err = createContextBlockSettingsFile(contextName, config, "deploying")
 	if err != nil {
-		return err
+		return
 	}
 
-	// create system-services.settings.yml
+	// creates system-services.settings.yml
 	err = createContextBlockSettingsFile(contextName, config, "system-services")
 	if err != nil {
-		return err
+		return
 	}
 
-	// create application-services.settings.yml
-	paramsFilter := func(defaultValuesMap map[string]string) func(param string, value *string) {
-		return func(param string, value *string) {
-			for key, defaultValue := range defaultValuesMap {
-				if param == key {
-					if *value == "" {
-						*value = defaultValue
-					}
-				}
-			}
-		}
+	// creates application-services.settings.yml
+	err = createApllicationsServicesContextSettingsFile(contextName, config)
+
+	return
+}
+
+// @private
+
+// initContextToCreat initializes and returns main context parameters for Context creation
+func initContextToCreate(contextName string) (config map[string]map[string]string,
+	contextSettingsPath, defaultSettingsPath string,
+	contextSettingsParameters contextTypes.SettingsParameters,
+	err error) {
+
+	if contextName == "" {
+		err = contextErrors.ErrNotDefinedContextName
+		return
 	}
-	configuration, err := contextHelpers.GetConfiguration(config)
+
+	config, err = contextHelpers.GetMainConfig()
 	if err != nil {
-		return err
+		return
 	}
-	defaultValues := make(map[string]string)
-	defaultValues["branch"] = configuration["application-services"]["base-branch"]
-	if configuration["application-services"]["feature-branch-naming"] == "context-name" {
-		defaultValues["branch"] = contextName
+
+	contextDir := "./" + config["paths"]["contexts"] + "/" + contextName
+	if isContextDirExists, _ := files.IsExists(contextDir); !isContextDirExists {
+		files.CreateDir("./" + contextDir)
 	}
-	for param, value := range configuration["application-services"] {
-		if param != "base-branch" && param != "feature-branch" && param != "template" {
-			defaultValues[param] = value
-		}
-	}
-	err = createContextBlockSettingsFile(contextName, config, "application-services", paramsFilter(defaultValues))
+
+	contextSettingsPath = contextDir + "/context.settings.yml"
+	defaultSettingsPath = "./" + config["paths"]["context-templates"] + "/default-settings.yml"
+
+	contextSettingsParameters, err = getSettingsParamters(contextName, config)
 	if err != nil {
-		return err
+		return
+	}
+
+	if config["paths"]["context-templates"] == "" {
+		err = contextErrors.ErrNotDefinedContextsPath
+		return
 	}
 
 	return
 }
 
-// Get settings parameters of context
+// filterParamsFunc implemets handler type for filtering settings parameters
+type filterParamsFunc func(string, *string)
+
+// createContextBlockSettingsFile creates '<blockName>.settings.yml' file with settings of context block
+func createContextBlockSettingsFile(contextName string, config map[string]map[string]string,
+	blockName string, filterParams ...filterParamsFunc) (err error) {
+
+	configuration, err := contextHelpers.GetConfiguration(config)
+	if err != nil {
+		return
+	}
+
+	if configuration[blockName]["template"] == "" {
+		errInfo := fmt.Sprintf("context: template for block '%s' is not defined; couldn't create file settings for this block", blockName)
+		return errors.New(errInfo)
+	}
+
+	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/context.settings.yml"
+	context, err := files.ReadTwoLevelYaml(contextSettingsPath)
+	if err != nil {
+		return
+	}
+
+	templatesPath := contextHelpers.GetValueFromContextOrDefault(context, config, "paths", "context-templates")
+
+	contextBlockTemplate := contextHelpers.GetValueFromContextOrDefault(context, configuration, blockName, "template")
+	contextBlockTemplatePath := "./" + templatesPath + "/" + blockName + "/" + contextBlockTemplate
+	contextBlockTemplateSettings, err := files.ReadTwoLevelYaml(contextBlockTemplatePath)
+	if err != nil {
+		return err
+	}
+
+	parametersPath := "./" + templatesPath + "/" + blockName + "/parameters.yml"
+	parametersOfBlockItems, err := contextHelpers.GetSortedKeysFromYaml(parametersPath)
+	if err != nil {
+		return err
+	}
+
+	contextBlockSettingsFilePath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + blockName + ".settings.yml"
+	isCcontextBlockSettingsFileExists, _ := files.IsExists(contextBlockSettingsFilePath)
+	if isCcontextBlockSettingsFileExists {
+		files.Delete(contextBlockSettingsFilePath)
+	}
+
+	// fill context block settings map
+	for item := range contextBlockTemplateSettings {
+		_, err = files.WriteAppendFileWithIndent(contextBlockSettingsFilePath, item+": ", 0)
+		if err != nil {
+			return
+		}
+
+		for i := 0; i < len(parametersOfBlockItems); i++ {
+			param := parametersOfBlockItems[i].Key
+			value := ""
+
+			if contextBlockTemplateSettings[item][param] != "" {
+				value = contextBlockTemplateSettings[item][param]
+			}
+
+			if filterParams != nil && filterParams[0] != nil {
+				filterParams[0](param, &value)
+			}
+
+			_, err = files.WriteAppendFileWithIndent(contextBlockSettingsFilePath, param+": "+value, 2)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	return
+}
+
+// paramsFilter() returns the function which filters parameters of settings map and
+// changes it accordance with defaultValuesMap
+func paramsFilter(defaultValuesMap map[string]string) func(param string, value *string) {
+	return func(param string, value *string) {
+		for key, defaultValue := range defaultValuesMap {
+			if param == key {
+				if *value == "" {
+					*value = defaultValue
+				}
+			}
+		}
+	}
+}
+
+// createContextBlockSettingsFile creates 'application-services.settings.yml' file with settings of context block
+func createApllicationsServicesContextSettingsFile(contextName string,
+	config map[string]map[string]string) (err error) {
+
+	configuration, err := contextHelpers.GetConfiguration(config)
+	if err != nil {
+		return
+	}
+
+	defaultValues := make(map[string]string)
+	defaultValues["branch"] = configuration["application-services"]["base-branch"]
+	if configuration["application-services"]["feature-branch-naming"] == "context-name" {
+		defaultValues["branch"] = contextName
+	}
+
+	for param, value := range configuration["application-services"] {
+		if param != "base-branch" && param != "feature-branch-naming" && param != "template" {
+			defaultValues[param] = value
+		}
+	}
+
+	err = createContextBlockSettingsFile(contextName, config, "application-services", paramsFilter(defaultValues))
+
+	return
+}
+
+// getSettingsParamters returns settings parameters of context
 func getSettingsParamters(contextName string,
 	config map[string]map[string]string) (settingsParameters contextTypes.SettingsParameters, err error) {
 
@@ -135,80 +236,6 @@ func getSettingsParamters(contextName string,
 			BaseBranch:          configuration["application-services"]["base-branch"],
 			FeatureBranchNaming: configuration["application-services"]["feature-branch-naming"],
 			Template:            configuration["application-services"]["template"]}}
-
-	return
-}
-
-// Create block of context settings yaml file
-type filterParamsFunc func(string, *string)
-
-func createContextBlockSettingsFile(contextName string, config map[string]map[string]string,
-	blockName string, filterParams ...filterParamsFunc) (err error) {
-
-	configuration, err := contextHelpers.GetConfiguration(config)
-	if err != nil {
-		return err
-	}
-
-	if configuration[blockName]["template"] == "" {
-		errInfo := fmt.Sprintf("ERROR: context => Template for block '%s' is not defined. Couldn't create file settings for this block", blockName)
-		return errors.New(errInfo)
-	}
-
-	// read context settings
-	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/context.settings.yml"
-	context, err := files.ReadTwoLevelYaml(contextSettingsPath)
-	if err != nil {
-		return err
-	}
-
-	// set template path
-	templatesPath := contextHelpers.GetValueFromContextOrDefault(context, config, "paths", "context-templates")
-
-	// set context block settings template
-	contextBlockTemplate := contextHelpers.GetValueFromContextOrDefault(context, configuration, blockName, "template")
-	contextBlockTemplatePath := "./" + templatesPath + "/" + blockName + "/" + contextBlockTemplate
-	contextBlockTemplateSettings, err := files.ReadTwoLevelYaml(contextBlockTemplatePath)
-	if err != nil {
-		return err
-	}
-
-	// read parameters of context block
-	parametersPath := "./" + templatesPath + "/" + blockName + "/parameters.yml"
-	parametersOfBlockItems, err := contextHelpers.GetSortedKeysFromYaml(parametersPath)
-	if err != nil {
-		return err
-	}
-
-	// check if context block settings file exists and delete it if yes
-	contextBlockSettingsFilePath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + blockName + ".settings.yml"
-	isCcontextBlockSettingsFileExists, _ := files.IsExists(contextBlockSettingsFilePath)
-	if isCcontextBlockSettingsFileExists {
-		files.Delete(contextBlockSettingsFilePath)
-	}
-
-	// fill context block settings map
-	for item := range contextBlockTemplateSettings {
-		_, err = files.WriteAppendFileWithIndent(contextBlockSettingsFilePath, item+": ", 0)
-		if err != nil {
-			return err
-		}
-		for i := 0; i < len(parametersOfBlockItems); i++ {
-			param := parametersOfBlockItems[i].Key
-			value := ""
-			if contextBlockTemplateSettings[item][param] != "" {
-				value = contextBlockTemplateSettings[item][param]
-			}
-			if filterParams != nil && filterParams[0] != nil {
-				filterParams[0](param, &value)
-			}
-
-			_, err = files.WriteAppendFileWithIndent(contextBlockSettingsFilePath, param+": "+value, 2)
-			if err != nil {
-				return err
-			}
-		}
-	}
 
 	return
 }

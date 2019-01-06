@@ -13,34 +13,10 @@ import (
 
 // Install context:
 //  - pull all git repositories of application services and refresh them branches
-//  - create docker-compose.yml files or helm charts for deploying
 //  - building or pulling images (if it's need)
+//  - create docker-compose.yml files or helm charts for deploying
 func Install(contextName string) (err error) {
-	if contextName == "" {
-		return contextErrors.ErrNotDefinedContextName
-	}
-
-	config, err := getMainConfig()
-	if err != nil {
-		return
-	}
-
-	contextSettingsPath, err := checkAndCreateContextSettingsIfNotExists(contextName, config)
-	if err != nil {
-		return
-	}
-
-	configuration, err := contextHelpers.GetConfiguration(config)
-	if err != nil {
-		return
-	}
-
-	context, err := files.ReadTwoLevelYaml(contextSettingsPath)
-	if err != nil {
-		return
-	}
-
-	contextServicesDir, err := getContextServicesDir(contextName, config)
+	config, configuration, context, contextServicesDir, err := initContextToInstall(contextName)
 	if err != nil {
 		return
 	}
@@ -57,21 +33,44 @@ func Install(contextName string) (err error) {
 	return
 }
 
-/***************************************************************/
+// @private
 
-// Get main config
-func getMainConfig() (config map[string]map[string]string, err error) {
-	config, err = files.ReadMainConfig()
+// initContextToCreat initializes and returns main context parameters for  Context installation
+func initContextToInstall(contextName string) (config,
+	configuration, context map[string]map[string]string,
+	contextServicesDir string, err error) {
+
+	if contextName == "" {
+		err = contextErrors.ErrNotDefinedContextName
+		return
+	}
+
+	config, err = contextHelpers.GetMainConfig()
 	if err != nil {
-		return make(map[string]map[string]string), contextErrors.ErrCouldntReadConfig
+		return
 	}
-	if config["paths"]["contexts"] == "" {
-		return make(map[string]map[string]string), contextErrors.ErrNotDefinedContextsPath
+
+	contextSettingsPath, err := checkAndCreateContextSettingsIfNotExists(contextName, config)
+	if err != nil {
+		return
 	}
+
+	configuration, err = contextHelpers.GetConfiguration(config)
+	if err != nil {
+		return
+	}
+
+	context, err = files.ReadTwoLevelYaml(contextSettingsPath)
+	if err != nil {
+		return
+	}
+
+	contextServicesDir, err = getContextServicesDir(contextName, config)
+
 	return
 }
 
-// Check context dir and settings.yml and create it if need
+// checkAndCreateContextSettingsIfNotExists checks context dir and settings.yml and creates it if need
 func checkAndCreateContextSettingsIfNotExists(contextName string,
 	config map[string]map[string]string) (contextSettingsPath string, err error) {
 
@@ -94,7 +93,8 @@ func checkAndCreateContextSettingsIfNotExists(contextName string,
 	return
 }
 
-// Getting application services settings by merging default template settings and context level settings
+// getApplicationServices returns application services settings by merging default template settings
+// and context level settings
 func getApplicationServices(contextName string, context, config map[string]map[string]string,
 	configuration map[string]map[string]string) (applicationServices map[string]map[string]string, err error) {
 
@@ -129,7 +129,7 @@ func getApplicationServices(contextName string, context, config map[string]map[s
 	return
 }
 
-// Get context servcies directory
+// getContextServicesDir returns context servcies directory
 func getContextServicesDir(contextName string, config map[string]map[string]string) (contextServicesDir string, err error) {
 	contextServicesDir = config["paths"]["contexts"] + "/" + contextName + "/services"
 	isContextServicesDirExists, err := files.IsExists("./" + contextServicesDir)
@@ -143,7 +143,8 @@ func getContextServicesDir(contextName string, config map[string]map[string]stri
 	return
 }
 
-// Clone and refresh all application-services from git server
+// cloneAndRefreshApplicationServicesGitRepo clones and refreshs all application-services repositories
+// from git server
 func cloneAndRefreshApplicationServicesGitRepo(contextServicesDir, taskBaseBranch string,
 	config, applicationServices map[string]map[string]string) (err error) {
 
