@@ -5,20 +5,24 @@ import (
 	"devlab/lib/logger"
 	"errors"
 	"fmt"
+
+	contextErrors "devlab/cmd/context/common/errors"
+	contextHelpers "devlab/cmd/context/common/helpers"
+	contextTypes "devlab/cmd/context/common/types"
 )
 
-// Create a new context
+// Create creates a new context
 func Create(contextName string) (err error) {
 	if contextName == "" {
-		return ErrNotDefinedContextName
+		return contextErrors.ErrNotDefinedContextName
 	}
 
 	config, err := files.ReadMainConfig()
 	if err != nil {
-		return ErrCouldntReadConfig
+		return contextErrors.ErrCouldntReadConfig
 	}
 	if config["paths"]["contexts"] == "" {
-		return ErrNotDefinedContextsPath
+		return contextErrors.ErrNotDefinedContextsPath
 	}
 
 	// check context dir and create it if need
@@ -33,7 +37,7 @@ func Create(contextName string) (err error) {
 	}
 
 	if config["paths"]["context-templates"] == "" {
-		return ErrNotDefinedContextsPath
+		return contextErrors.ErrNotDefinedContextsPath
 	}
 	defaultSettingsPath := "./" + config["paths"]["context-templates"] + "/default-settings.yml"
 
@@ -80,7 +84,7 @@ func Create(contextName string) (err error) {
 			}
 		}
 	}
-	configuration, err := getConfiguration(config)
+	configuration, err := contextHelpers.GetConfiguration(config)
 	if err != nil {
 		return err
 	}
@@ -103,29 +107,31 @@ func Create(contextName string) (err error) {
 }
 
 // Get settings parameters of context
-func getSettingsParamters(contextName string, config map[string]map[string]string) (settingsParameters SettingsParameters, err error) {
-	configuration, err := getConfiguration(config)
+func getSettingsParamters(contextName string,
+	config map[string]map[string]string) (settingsParameters contextTypes.SettingsParameters, err error) {
+
+	configuration, err := contextHelpers.GetConfiguration(config)
 	if err != nil {
-		return SettingsParameters{}, err
+		return contextTypes.SettingsParameters{}, err
 	}
 
-	settingsParameters = SettingsParameters{
+	settingsParameters = contextTypes.SettingsParameters{
 		Name: contextName,
-		Description: SettingsParametersDescription{
+		Description: contextTypes.SettingsParametersDescription{
 			Maintainer: fmt.Sprintf("\"%s\"", config["description"]["maintainer"]),
 			Created:    fmt.Sprintf("\"%s\"", "2019-01-01")},
-		Docker: SettingsParametersDocker{
+		Docker: contextTypes.SettingsParametersDocker{
 			ImagesPrefix: fmt.Sprintf("%s-%s", configuration["docker"]["images-prefix"], contextName),
 			Network:      fmt.Sprintf("%s-%s", configuration["docker"]["network-prefix"], contextName)},
-		Paths: SettingsParametersPaths{
+		Paths: contextTypes.SettingsParametersPaths{
 			Templates: config["paths"]["context-templates"]},
-		Building: SettingsParametersBuilding{
+		Building: contextTypes.SettingsParametersBuilding{
 			Template: configuration["building"]["template"]},
-		Deploying: SettingsParametersDeploying{
+		Deploying: contextTypes.SettingsParametersDeploying{
 			Template: configuration["deploying"]["template"]},
-		SystemServices: SettingsParametersSystemServices{
+		SystemServices: contextTypes.SettingsParametersSystemServices{
 			Template: configuration["system-services"]["template"]},
-		ApplicationServices: SettingsParametersApplicationServices{
+		ApplicationServices: contextTypes.SettingsParametersApplicationServices{
 			BaseBranch:          configuration["application-services"]["base-branch"],
 			FeatureBranchNaming: configuration["application-services"]["feature-branch-naming"],
 			Template:            configuration["application-services"]["template"]}}
@@ -139,7 +145,7 @@ type filterParamsFunc func(string, *string)
 func createContextBlockSettingsFile(contextName string, config map[string]map[string]string,
 	blockName string, filterParams ...filterParamsFunc) (err error) {
 
-	configuration, err := getConfiguration(config)
+	configuration, err := contextHelpers.GetConfiguration(config)
 	if err != nil {
 		return err
 	}
@@ -157,10 +163,10 @@ func createContextBlockSettingsFile(contextName string, config map[string]map[st
 	}
 
 	// set template path
-	templatesPath := getValueFromContextOrDefault(context, config, "paths", "context-templates")
+	templatesPath := contextHelpers.GetValueFromContextOrDefault(context, config, "paths", "context-templates")
 
 	// set context block settings template
-	contextBlockTemplate := getValueFromContextOrDefault(context, configuration, blockName, "template")
+	contextBlockTemplate := contextHelpers.GetValueFromContextOrDefault(context, configuration, blockName, "template")
 	contextBlockTemplatePath := "./" + templatesPath + "/" + blockName + "/" + contextBlockTemplate
 	contextBlockTemplateSettings, err := files.ReadTwoLevelYaml(contextBlockTemplatePath)
 	if err != nil {
@@ -169,7 +175,7 @@ func createContextBlockSettingsFile(contextName string, config map[string]map[st
 
 	// read parameters of context block
 	parametersPath := "./" + templatesPath + "/" + blockName + "/parameters.yml"
-	parametersOfBlockItems, err := getSortedKeysFromYaml(parametersPath)
+	parametersOfBlockItems, err := contextHelpers.GetSortedKeysFromYaml(parametersPath)
 	if err != nil {
 		return err
 	}
@@ -188,7 +194,7 @@ func createContextBlockSettingsFile(contextName string, config map[string]map[st
 			return err
 		}
 		for i := 0; i < len(parametersOfBlockItems); i++ {
-			param := parametersOfBlockItems[i].key
+			param := parametersOfBlockItems[i].Key
 			value := ""
 			if contextBlockTemplateSettings[item][param] != "" {
 				value = contextBlockTemplateSettings[item][param]

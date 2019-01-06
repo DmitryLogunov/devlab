@@ -1,8 +1,8 @@
 package main
 
 import (
-	"devlab/bin/context"
-	createDockerCompose "devlab/bin/create-docker-compose"
+	"devlab/cmd/context"
+	createDockerCompose "devlab/cmd/create-docker-compose"
 	"fmt"
 	"os"
 )

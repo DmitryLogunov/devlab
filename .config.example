@@ -12,4 +12,4 @@ docker:
   docker-compose-version: 2.0
 git:
   git-server-host: git@github.com:City-and-Guilds-Group/
-
+  ssh-private-key-path:
