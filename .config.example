@@ -6,10 +6,3 @@ paths:
   contexts: contexts  
   configurations: data/configurations
   context-templates: data/context-templates    
-docker:
-  registry-host: harbor01.dev1.cgdlp.io:444/
-  images-push-prefix: library/
-  docker-compose-version: 2.0
-git:
-  git-server-host: git@github.com:City-and-Guilds-Group/
-  ssh-private-key-path:

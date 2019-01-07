@@ -1,0 +1,21 @@
+FROM node:8-alpine
+
+WORKDIR /usr/src/app
+
+RUN apk update && \
+    apk --no-cache add \
+    bash \
+    openssh \
+    python \
+    git \
+    yarn --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
+
+RUN echo '{"config": {"unsafe-perm":true } }' >> ~/.npmrc && \
+    echo "mkdir /root/.ssh" >> ~/entrypoint && \
+    echo "echo \$PRIVATE_KEY > /root/.ssh/id_rsa" >> ~/entrypoint && \
+    echo "chmod 0600 /root/.ssh/id_rsa" >> ~/entrypoint && \ 
+    echo "ssh-keyscan -H github.com >> /root/.ssh/known_hosts" >> ~/entrypoint && \
+    echo "(cd /usr/src/app && sh /usr/src/app/install)" >> ~/entrypoint && \
+    chmod +x ~/entrypoint
+
+CMD ~/entrypoint

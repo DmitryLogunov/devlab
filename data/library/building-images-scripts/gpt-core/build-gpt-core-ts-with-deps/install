@@ -1,0 +1,8 @@
+#! /bin/bash
+
+npm i -g yarn-recursive
+git clone git@github.com:City-and-Guilds-Group/dlp-core-ci.git /root/dlp-core-ci
+chmod +x /root/dlp-core-ci/helpers/install-dependencies.sh
+export BUILD_SCRIPTS_DIR=/root/dlp-core-ci/helpers
+/root/dlp-core-ci/helpers/install-dependencies.sh $BRANCH
+npm run tsc

@@ -57,7 +57,7 @@ func Create(contextName string) (err error) {
 
 // @private
 
-// initContextToCreat initializes and returns main context parameters for Context creation
+// initContextToCreate initializes and returns main context parameters for Context creation
 func initContextToCreate(contextName string) (config map[string]map[string]string,
 	contextSettingsPath, defaultSettingsPath string,
 	contextSettingsParameters contextTypes.SettingsParameters,

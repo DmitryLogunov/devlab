@@ -1,3 +1,8 @@
-base-repo-path:
-registry-host:
-images-registry-prefix:  
+mount-ssh: # true | false
+define-building-envs: # true | false  
+building-env-file: # building env-file path
+install-script: # install script path  
+building-scripts-path: # relative path to building scripts 
+building-dockerfiles-path: # relative path to building dockerfiles
+building-dockerfile: # building dockerfile
+building-image: # building image
