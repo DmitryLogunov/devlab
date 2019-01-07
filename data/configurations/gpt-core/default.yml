@@ -6,6 +6,7 @@ docker:
   docker-compose-version: 2.0  
 git:
   server-host: git@github.com:City-and-Guilds-Group/
+  auto-push: false  
 ssh:  
   private-key-path: /home/lynx/.ssh/id_rsa 
   ssh-config: data/library/building-images-scripts/gpt-core/ssh.config 

@@ -29,7 +29,8 @@ func GetConfiguration(config map[string]map[string]string) (configuration map[st
 
 // GetValueFromContextOrDefault returns value form context map accordingly topLevel ans subLevel keys.
 // If context map value is empty then return value from default map
-func GetValueFromContextOrDefault(context map[string]map[string]string, defaultConfig map[string]map[string]string,
+func GetValueFromContextOrDefault(context map[string]map[string]string,
+	defaultConfig map[string]map[string]string,
 	topLevelKey, subLevelKey string) (value string) {
 
 	if context[topLevelKey][subLevelKey] != "" {

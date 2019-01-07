@@ -26,9 +26,11 @@ func Install(contextName string) (err error) {
 		return
 	}
 
-	// clone and refresh all application-services from git server
-	taskBaseBranch := contextHelpers.GetValueFromContextOrDefault(context, configuration, "application-services", "base-branch")
-	err = cloneAndRefreshApplicationServicesGitRepo(contextServicesDir, taskBaseBranch, config, applicationServices)
+	// clone and refresh all application-services repositories from git server
+	taskBaseBranch := contextHelpers.GetValueFromContextOrDefault(context, configuration,
+		"application-services", "base-branch")
+	err = cloneAndRefreshApplicationServicesGitRepo(contextServicesDir, taskBaseBranch,
+		context, applicationServices)
 
 	return
 }
@@ -146,28 +148,36 @@ func getContextServicesDir(contextName string, config map[string]map[string]stri
 // cloneAndRefreshApplicationServicesGitRepo clones and refreshs all application-services repositories
 // from git server
 func cloneAndRefreshApplicationServicesGitRepo(contextServicesDir, taskBaseBranch string,
-	config, applicationServices map[string]map[string]string) (err error) {
+	context, applicationServices map[string]map[string]string) (err error) {
 
 	for serviceName, serviceParams := range applicationServices {
+		if serviceParams["enabled"] != "true" {
+			continue
+		}
+
 		logger.Header(strings.ToUpper(serviceName))
 
 		isServiceDirExists, _ := files.IsExists("./" + contextServicesDir + "/serviceName")
 
 		if !isServiceDirExists {
-			services.Clone(contextServicesDir, serviceName, config["git"]["git-server-host"], serviceParams["git-path"])
+			services.Clone(contextServicesDir,
+				serviceName,
+				context["git"]["server-host"],
+				serviceParams["git-path"])
 		}
 
-		serviceBaseBranch := serviceParams["base-branch"]
-		if serviceBaseBranch == "" {
-			serviceBaseBranch = taskBaseBranch
+		baseServiceBranch := serviceParams["base-branch"]
+		if baseServiceBranch == "" {
+			baseServiceBranch = taskBaseBranch
 		}
 
 		contextServiceBranch := serviceParams["branch"]
 		if contextServiceBranch == "" {
-			contextServiceBranch = serviceBaseBranch
+			contextServiceBranch = baseServiceBranch
 		}
 
-		services.RefreshGitRepo(contextServicesDir, serviceName, contextServiceBranch, serviceBaseBranch)
+		services.RefreshGitRepo(contextServicesDir, serviceName,
+			contextServiceBranch, baseServiceBranch, context)
 	}
 
 	return

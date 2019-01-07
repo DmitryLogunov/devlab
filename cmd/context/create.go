@@ -13,8 +13,7 @@ import (
 
 // Create creates a new context
 func Create(contextName string) (err error) {
-	config, contextSettingsPath, defaultSettingsPath,
-		contextSettingsParameters, err := initContextToCreate(contextName)
+	config, contextSettingsPath, defaultSettingsPath, contextSettings, err := initContextToCreate(contextName)
 	if err != nil {
 		return
 	}
@@ -26,7 +25,7 @@ func Create(contextName string) (err error) {
 	}
 
 	// creates context.settings.yml
-	err = files.RenderTextTemplate(defaultSettingsPath, contextSettingsPath, contextSettingsParameters)
+	err = files.RenderTextTemplate(defaultSettingsPath, contextSettingsPath, contextSettings)
 	if err != nil {
 		return
 	}
@@ -60,7 +59,7 @@ func Create(contextName string) (err error) {
 // initContextToCreate initializes and returns main context parameters for Context creation
 func initContextToCreate(contextName string) (config map[string]map[string]string,
 	contextSettingsPath, defaultSettingsPath string,
-	contextSettingsParameters contextTypes.SettingsParameters,
+	contextSettings contextTypes.ContextSettings,
 	err error) {
 
 	if contextName == "" {
@@ -81,7 +80,7 @@ func initContextToCreate(contextName string) (config map[string]map[string]strin
 	contextSettingsPath = contextDir + "/context.settings.yml"
 	defaultSettingsPath = "./" + config["paths"]["context-templates"] + "/default-settings.yml"
 
-	contextSettingsParameters, err = getSettingsParamters(contextName, config)
+	contextSettings, err = getContextSettings(contextName, config)
 	if err != nil {
 		return
 	}
@@ -208,34 +207,49 @@ func createApllicationsServicesContextSettingsFile(contextName string,
 }
 
 // getSettingsParamters returns settings parameters of context
-func getSettingsParamters(contextName string,
-	config map[string]map[string]string) (settingsParameters contextTypes.SettingsParameters, err error) {
+func getContextSettings(contextName string,
+	config map[string]map[string]string) (settingsParameters contextTypes.ContextSettings, err error) {
 
 	configuration, err := contextHelpers.GetConfiguration(config)
 	if err != nil {
-		return contextTypes.SettingsParameters{}, err
+		return contextTypes.ContextSettings{}, err
 	}
 
-	settingsParameters = contextTypes.SettingsParameters{
+	settingsParameters = contextTypes.ContextSettings{
 		Name: contextName,
-		Description: contextTypes.SettingsParametersDescription{
+		Description: contextTypes.ContextSettingsDescription{
 			Maintainer: fmt.Sprintf("\"%s\"", config["description"]["maintainer"]),
 			Created:    fmt.Sprintf("\"%s\"", "2019-01-01")},
-		Docker: contextTypes.SettingsParametersDocker{
-			ImagesPrefix: fmt.Sprintf("%s-%s", configuration["docker"]["images-prefix"], contextName),
-			Network:      fmt.Sprintf("%s-%s", configuration["docker"]["network-prefix"], contextName)},
-		Paths: contextTypes.SettingsParametersPaths{
+		Docker: contextTypes.ContextSettingsDocker{
+			ImagesPrefix:         fmt.Sprintf("%s-%s", configuration["docker"]["images-prefix"], contextName),
+			Network:              fmt.Sprintf("%s-%s", configuration["docker"]["network-prefix"], contextName),
+			RegistryHost:         configuration["docker"]["registry-host"],
+			ImagesPushPrefix:     configuration["docker"]["images-push-prefix"],
+			DockerComposeVersion: configuration["docker"]["docker-compose-version"]},
+		Git: contextTypes.ContextSettingsGit{
+			ServerHost: configuration["git"]["server-host"],
+			AutoPush:   configuration["git"]["auto-push"]},
+		Ssh: contextTypes.ContextSettingsSsh{
+			PrivateKeyPath: configuration["ssh"]["private-key-path"],
+			SshConfig:      configuration["ssh"]["ssh-config"]},
+		Paths: contextTypes.ContextSettingsPaths{
 			Templates: config["paths"]["context-templates"]},
-		Building: contextTypes.SettingsParametersBuilding{
-			Template: configuration["building"]["template"]},
-		Deploying: contextTypes.SettingsParametersDeploying{
-			Template: configuration["deploying"]["template"]},
-		SystemServices: contextTypes.SettingsParametersSystemServices{
+		Building: contextTypes.ContextSettingsBuilding{
+			BuildingScriptsPath:     configuration["building"]["building-scripts-path"],
+			BuildingDockerfilesPath: configuration["building"]["building-dockerfiles-path"],
+			Template:                configuration["building"]["template"]},
+		Deploying: contextTypes.ContextSettingsDeploying{
+			SystemServices:      configuration["deploying"]["system-services"],
+			ApplicationServices: configuration["deploying"]["application-services"],
+			Template:            configuration["deploying"]["template"]},
+		SystemServices: contextTypes.ContextSettingsSystemServices{
 			Template: configuration["system-services"]["template"]},
-		ApplicationServices: contextTypes.SettingsParametersApplicationServices{
-			BaseBranch:          configuration["application-services"]["base-branch"],
-			FeatureBranchNaming: configuration["application-services"]["feature-branch-naming"],
-			Template:            configuration["application-services"]["template"]}}
+		ApplicationServices: contextTypes.ContextSettingsApplicationServices{
+			BaseBranch:                       configuration["application-services"]["base-branch"],
+			FeatureBranchNaming:              configuration["application-services"]["feature-branch-naming"],
+			MountSourceCodeVolumeOnDeploying: configuration["application-services"]["mount-source-code-volume-on-deploying"],
+			DockerRegistryTag:                configuration["application-services"]["docker-registry-tag"],
+			Template:                         configuration["application-services"]["template"]}}
 
 	return
 }
