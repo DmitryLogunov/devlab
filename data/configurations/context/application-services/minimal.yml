@@ -1,11 +1,11 @@
 dlp-gateway-initiator:
   enabled: true
-  getting-image-strategy: build 
+  getting-image-strategy: pull
 dlp-gateway-command:
   enabled: true
-  getting-image-strategy: build
+  getting-image-strategy: pull
 dlp-service-config:
   enabled: true
-  getting-image-strategy: build
+  getting-image-strategy: pull
   git-path: dlp-service-config-js.git
   docker-compose: docker-compose.config.yml 

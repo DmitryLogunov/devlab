@@ -1,14 +1,8 @@
 building-dockerfile: # building dockerfile
-  order: 6
 building-image: # building image
-  order: 5
 install-script: # install script path 
-  order: 4
 building-env-file: # building env-file path
-  order: 3
 mount-ssh: # true | false
-  order: 2
 set-building-envs: # true | false
-  order: 1  
 building-scripts-path: # path to building scripts
 building-dockerfiles-path: # path to building dockerfiles

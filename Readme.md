@@ -5,16 +5,17 @@ The set of tools for software developers whose develop  applications with micros
 ### Commands
 
 - devlab setup
-- devlab context create
-- devlab context install
-- devlab context deploy
-- devlab context down
+- devlab context create # OK
+- devlab context install # OK
 - devlab context status
 - devlub context push
 - devlab context delete
-- devlab kube set
-- devlab kube exec
-- devlab kube logs
-- devlab kube sync
-- devlab kube debug
-- devlab kube port-forward
+- devlab kube set # InProcess
+- devlab kube deploy # InProcess
+- devlab kube down # InProcess
+- devlab kube status # InProcess
+- devlab kube exec # InProcess
+- devlab kube logs # InProcess
+- devlab kube sync # InProcess
+- devlab kube debug # InProcess
+- devlab kube port-forward # InProcess

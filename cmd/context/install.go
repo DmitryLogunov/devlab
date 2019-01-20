@@ -31,16 +31,10 @@ func Install(contextName string) (err error) {
 	err = cloneAndRefreshApplicationServicesGitRepo(contextServicesDir, taskBaseBranch,
 		context, applicationServices)
 
-	for serviceName := range applicationServices {
-		if err = BuildService(contextName, serviceName); err != nil {
-			break
-		}
-	}
-
 	return
 }
 
-// @private
+/**************************** helpers *************************/
 
 // initContextToCreat initializes and returns main context parameters for  Context installation
 func initContextToInstall(contextName string) (config,
@@ -82,7 +76,9 @@ func checkAndCreateContextSettingsIfNotExists(contextName string,
 	config map[string]map[string]string) (contextSettingsPath string, err error) {
 
 	contextDir := "./" + config["paths"]["contexts"] + "/" + contextName
-	contextSettingsPath = contextDir + "/context.settings.yml"
+	levelFolder := config["configuration-levels"]["applications"]
+
+	contextSettingsPath = contextDir + "/" + levelFolder + "/context.settings.yml"
 	isContextDirExists, _ := files.IsExists(contextDir)
 	isContextSettingsExists, _ := files.IsExists(contextSettingsPath)
 	if !isContextDirExists || !isContextSettingsExists {

@@ -1,0 +1,33 @@
+docker:    
+  images-prefix: core 
+  network-prefix:  core-bedrock-network  
+  registry-host: harbor01.dev1.cgdlp.io:444/
+  images-push-prefix: library/
+  docker-compose-version: 2.0  
+git:
+  server-host: git@github.com:City-and-Guilds-Group/
+  auto-push: false      
+application-services:
+  level: applications
+  base-branch: develop
+  feature-branch-naming: context-name 
+  docker-registry-tag: release.2.5.0
+  template: default.yml  
+deploying:
+  configure: false
+  level: deploy
+  system-services: docker # docker | kubernetes
+  application-services: docker # docker | kubernetes
+  template: default.yml     
+building:
+  configure: false
+  level: applications 
+  building-scripts-path: data/library/building-images-scripts/gpt-core
+  building-dockerfiles-path: data/library/dockerfiles/gpt-core       
+  private-key-path: /home/lynx/.ssh/id_rsa 
+  ssh-config: data/library/building-images-scripts/gpt-core/ssh.config
+  template: default.yml 
+system-services:
+  configure: false
+  level: deploy
+  template: default.yml  

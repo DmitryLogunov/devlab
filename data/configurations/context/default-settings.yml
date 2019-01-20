@@ -3,35 +3,47 @@ description:
   info: 
   maintainer: {{ if .Description.Maintainer }}{{ .Description.Maintainer }}{{ end }} 
   created: {{ if .Description.Created }}{{ .Description.Created }}{{ end }} 
+git:
+  server-host: {{ if .Git.ServerHost }}{{ .Git.ServerHost }}{{ end }}	
+  auto-push: {{ if .Git.AutoPush }}{{ .Git.AutoPush }}{{ end }}  
+{{- if ne .Building.Configure "false" }}   
 docker:
   images-prefix: {{ if .Docker.ImagesPrefix }}{{ .Docker.ImagesPrefix }}{{ end }} 
   network: {{ if .Docker.Network }}{{ .Docker.Network }}{{ end }} 
   registry-host: {{ if .Docker.RegistryHost }}{{ .Docker.RegistryHost }}{{ end }}
   images-push-prefix: {{ if .Docker.ImagesPushPrefix }}{{ .Docker.ImagesPushPrefix }}{{ end }}
-  docker-compose-version: {{ if .Docker.DockerComposeVersion }}{{ .Docker.DockerComposeVersion }}{{ end }}
-git:
-  server-host: {{ if .Git.ServerHost }}{{ .Git.ServerHost }}{{ end }}	
-  auto-push: {{ if .Git.AutoPush }}{{ .Git.AutoPush }}{{ end }}	   
+  docker-compose-version: {{ if .Docker.DockerComposeVersion }}{{ .Docker.DockerComposeVersion }}{{ end }}	  
+{{- end }}  
+{{- if ne .Building.Configure "false" }}     
 ssh:
   private-key-path: {{ if .Ssh.PrivateKeyPath }}{{ .Ssh.PrivateKeyPath }}{{ end }}
   ssh-config: {{ if .Ssh.SshConfig }}{{ .Ssh.SshConfig }}{{ end }} 		
+{{- end }}  
 paths:
   templates: {{ if .Paths.Templates }}{{ .Paths.Templates }}{{ end }}
+{{- if ne .Building.Configure "false" }}  
 building: 
   version: 
   tag: {{ .Name }}
   building-scripts-path: {{ if .Building.BuildingScriptsPath }}{{ .Building.BuildingScriptsPath }}{{ end }}  
   building-dockerfiles-path: {{ if .Building.BuildingDockerfilesPath }}{{ .Building.BuildingDockerfilesPath }}{{ end }}     
   template: {{ if .Building.Template }}{{ .Building.Template }}{{ end }}
+{{- end }}  
+{{- if ne .Deploying.Configure "false" }}  
 deploying:
   system-services: {{ if .Deploying.SystemServices }}{{ .Deploying.SystemServices }}{{ end }}
   application-services: {{ if .Deploying.ApplicationServices }}{{ .Deploying.ApplicationServices }}{{ end }} 
   template: {{ if .Deploying.Template }}{{ .Deploying.Template }}{{ end }} 
+{{- end }} 
+{{- if ne .SystemServices.Configure "false" }}  
 system-services:
   template: {{ if .SystemServices.Template }}{{ .SystemServices.Template }}{{ end }} 
+{{- end }}  
+{{- if ne .ApplicationServices.Configure "false" }}  
 application-services: 
   base-branch: {{ if .ApplicationServices.BaseBranch }}{{ .ApplicationServices.BaseBranch }}{{ end }} 
   feature-branch-naming: {{ if .ApplicationServices.FeatureBranchNaming }}{{ .ApplicationServices.FeatureBranchNaming }}{{ end }}
   mount-source-code-volume-on-deploying: {{ if .ApplicationServices.MountSourceCodeVolumeOnDeploying }}{{ .ApplicationServices.MountSourceCodeVolumeOnDeploying }}{{ end }}
   docker-registry-tag: {{ if .ApplicationServices.DockerRegistryTag }}{{ .ApplicationServices.DockerRegistryTag }}{{ end }} 
   template: {{ if .ApplicationServices.Template }}{{ .ApplicationServices.Template }}{{ end }}
+{{- end }}  

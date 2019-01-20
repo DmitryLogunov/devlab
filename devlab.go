@@ -3,7 +3,6 @@ package main
 import (
 	"devlab/cmd/context"
 	contextErrors "devlab/cmd/context/common/errors"
-	createDockerCompose "devlab/cmd/create-docker-compose"
 	"fmt"
 	"os"
 )
@@ -26,5 +25,5 @@ func main() {
 				os.Exit(1)
 			}
 		}
-		break
+	}
 }

@@ -28,22 +28,26 @@ type ContextSettingsPaths struct {
 }
 
 type ContextSettingsBuilding struct {
+	Configure               string
 	BuildingScriptsPath     string
 	BuildingDockerfilesPath string
 	Template                string
 }
 
 type ContextSettingsDeploying struct {
+	Configure           string
 	SystemServices      string
 	ApplicationServices string
 	Template            string
 }
 
 type ContextSettingsSystemServices struct {
-	Template string
+	Configure string
+	Template  string
 }
 
 type ContextSettingsApplicationServices struct {
+	Configure                        string
 	BaseBranch                       string
 	FeatureBranchNaming              string
 	MountSourceCodeVolumeOnDeploying string

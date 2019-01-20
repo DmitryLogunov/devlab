@@ -13,7 +13,7 @@ import (
 
 // Create creates a new context
 func Create(contextName string) (err error) {
-	config, contextSettingsPath, defaultSettingsPath, contextSettings, err := initContextToCreate(contextName)
+	config, configuration, contextSettingsPath, defaultSettingsPath, contextSettings, err := initContextToCreate(contextName)
 	if err != nil {
 		return
 	}
@@ -31,33 +31,40 @@ func Create(contextName string) (err error) {
 	}
 
 	// creates deploying.settings.yml
-	err = createContextBlockSettingsFile(contextName, config, "deploying")
-	if err != nil {
-		return
+	if configuration["deploying"]["configure"] != "false" {
+		err = createContextBlockSettingsFile(contextName, config, "deploying")
+		if err != nil {
+			return
+		}
 	}
 
 	// creates system-services.settings.yml
-	err = createContextBlockSettingsFile(contextName, config, "system-services")
-	if err != nil {
-		return
+	if configuration["system-services"]["configure"] != "false" {
+		err = createContextBlockSettingsFile(contextName, config, "system-services")
+		if err != nil {
+			return
+		}
 	}
 
 	// creates building.settings.yml
-	err = createBuildingSettingsFile(contextName, config)
-	if err != nil {
-		return
+	if configuration["building"]["configure"] != "false" {
+		err = createBuildingSettingsFile(contextName, config)
+		if err != nil {
+			return
+		}
 	}
 
 	// creates application-services.settings.yml
-	err = createApplicationsServicesSettingsFile(contextName, config)
-
+	if configuration["application-services"]["configure"] != "false" {
+		err = createApplicationsServicesSettingsFile(contextName, config)
+	}
 	return
 }
 
-// @private
+/**************************** helpers *************************/
 
 // initContextToCreate initializes and returns main context parameters for Context creation
-func initContextToCreate(contextName string) (config map[string]map[string]string,
+func initContextToCreate(contextName string) (config, configuration map[string]map[string]string,
 	contextSettingsPath, defaultSettingsPath string,
 	contextSettings contextTypes.ContextSettings,
 	err error) {
@@ -72,12 +79,18 @@ func initContextToCreate(contextName string) (config map[string]map[string]strin
 		return
 	}
 
+	configuration, err = contextHelpers.GetConfiguration(config)
+	if err != nil {
+		return
+	}
+
 	contextDir := "./" + config["paths"]["contexts"] + "/" + contextName
 	if isContextDirExists, _ := files.IsExists(contextDir); !isContextDirExists {
 		files.CreateDir(contextDir)
 	}
 
-	contextSettingsPath = contextDir + "/context.settings.yml"
+	levelFolder := config["configuration-levels"]["applications"]
+	contextSettingsPath = contextDir + "/" + levelFolder + "/context.settings.yml"
 	defaultSettingsPath = "./" + config["paths"]["context-templates"] + "/default-settings.yml"
 
 	contextSettings, err = getContextSettings(contextName, config)
@@ -110,14 +123,16 @@ func createContextBlockSettingsFile(contextName string, config map[string]map[st
 		return errors.New(errInfo)
 	}
 
-	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/context.settings.yml"
+	levelFolder := config["configuration-levels"]["applications"]
+
+	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/context.settings.yml"
+
 	context, err := files.ReadTwoLevelYaml(contextSettingsPath)
 	if err != nil {
 		return
 	}
 
 	templatesPath := contextHelpers.GetValueFromContextOrDefault(context, config, "paths", "context-templates")
-
 	contextBlockTemplate := contextHelpers.GetValueFromContextOrDefault(context, configuration, blockName, "template")
 	contextBlockTemplatePath := "./" + templatesPath + "/" + blockName + "/" + contextBlockTemplate
 	contextBlockTemplateSettings, err := files.ReadTwoLevelYaml(contextBlockTemplatePath)
@@ -131,7 +146,9 @@ func createContextBlockSettingsFile(contextName string, config map[string]map[st
 		return err
 	}
 
-	contextBlockSettingsFilePath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + blockName + ".settings.yml"
+	levelFolder = config["configuration-levels"][configuration[blockName]["level"]]
+	contextBlockSettingsFilePath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/" + blockName + ".settings.yml"
+
 	isCcontextBlockSettingsFileExists, _ := files.IsExists(contextBlockSettingsFilePath)
 	if isCcontextBlockSettingsFileExists {
 		files.Delete(contextBlockSettingsFilePath)
@@ -221,7 +238,9 @@ func createBuildingSettingsFile(contextName string,
 		return errors.New(errInfo)
 	}
 
-	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/context.settings.yml"
+	levelFolder := config["configuration-levels"]["applications"]
+
+	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/context.settings.yml"
 	context, err := files.ReadTwoLevelYaml(contextSettingsPath)
 	if err != nil {
 		return
@@ -243,7 +262,8 @@ func createBuildingSettingsFile(contextName string,
 		return err
 	}
 
-	buildingSettingsFilePath := "./" + config["paths"]["contexts"] + "/" + contextName + "/building.settings.yml"
+	levelFolder = config["configuration-levels"][configuration["building"]["level"]]
+	buildingSettingsFilePath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/building.settings.yml"
 	isContextSettingsFileExists, _ := files.IsExists(buildingSettingsFilePath)
 	if isContextSettingsFileExists {
 		files.Delete(buildingSettingsFilePath)
@@ -312,16 +332,20 @@ func getContextSettings(contextName string,
 		Paths: contextTypes.ContextSettingsPaths{
 			Templates: config["paths"]["context-templates"]},
 		Building: contextTypes.ContextSettingsBuilding{
+			Configure:               configuration["building"]["configure"],
 			BuildingScriptsPath:     configuration["building"]["building-scripts-path"],
 			BuildingDockerfilesPath: configuration["building"]["building-dockerfiles-path"],
 			Template:                configuration["building"]["template"]},
 		Deploying: contextTypes.ContextSettingsDeploying{
+			Configure:           configuration["deploying"]["configure"],
 			SystemServices:      configuration["deploying"]["system-services"],
 			ApplicationServices: configuration["deploying"]["application-services"],
 			Template:            configuration["deploying"]["template"]},
 		SystemServices: contextTypes.ContextSettingsSystemServices{
-			Template: configuration["system-services"]["template"]},
+			Configure: configuration["system-services"]["configure"],
+			Template:  configuration["system-services"]["template"]},
 		ApplicationServices: contextTypes.ContextSettingsApplicationServices{
+			Configure:                        configuration["application-services"]["configure"],
 			BaseBranch:                       configuration["application-services"]["base-branch"],
 			FeatureBranchNaming:              configuration["application-services"]["feature-branch-naming"],
 			MountSourceCodeVolumeOnDeploying: configuration["application-services"]["mount-source-code-volume-on-deploying"],
