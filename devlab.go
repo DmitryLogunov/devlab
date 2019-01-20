@@ -27,8 +27,4 @@ func main() {
 			}
 		}
 		break
-	case "create-docker-compose":
-		createDockerCompose.Call(os.Args[2])
-		break
-	}
 }
