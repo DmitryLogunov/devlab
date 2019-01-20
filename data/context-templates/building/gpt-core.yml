@@ -1,6 +1,6 @@
 default: 
   mount-ssh: true
-  define-building-envs: true  
+  set-building-envs: true  
   building-env-file: build-gpt-core-ts-with-deps/.build.env
   install-script: build-gpt-core-ts-with-deps/install
   building-dockerfile: Dockerfile.node-gpt-core-base.build

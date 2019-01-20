@@ -1,0 +1,25 @@
+#! /bin/bash
+
+PRIVATE_KEY="$(cat /home/lynx/.ssh/id_rsa)"
+BUILDING_DOCKERFILE=/data/projects/go/src/devlab/data/library/dockerfiles/gpt-core/Dockerfile.node-gpt-core-base.1.build
+BUILDING_IMAGE=node-gpt-core-base-1
+
+# PRIVATE_KEY_PATH=/home/lynx/.ssh/id_rsa
+# SSH_CONFIG_PATH=/data/projects/go/src/devlab/data/library/building-images-scripts/gpt-core/ssh.config
+SERVICE_DIR=/data/projects/go/src/devlab/contexts/test-context/services
+INSTALL_SCRIPT=/data/projects/go/src/devlab/data/library/building-images-scripts/gpt-core/build-gpt-core-js-with-deps
+SERVICE_NAME=dlp-gateway-command
+BRANCH=develop
+
+docker build -f ${BUILDING_DOCKERFILE} -t ${BUILDING_IMAGE} .
+
+docker run -it --rm \
+    -e "BRANCH=${BRANCH}" \
+    -e "PRIVATE_KEY=${PRIVATE_KEY}" \
+    -v ${SERVICE_DIR}/${SERVICE_NAME}/:/usr/src/app \
+    -v ${INSTALL_SCRIPT}:/usr/src/app/install ${BUILDING_IMAGE}
+
+docker run -it --rm \
+    -e "BRANCH=${BRANCH}" \
+    -e "PRIVATE_KEY=${PRIVATE_KEY}" \
+    -v ${INSTALL_SCRIPT}:/usr/src/app/install ${BUILDING_IMAGE}    

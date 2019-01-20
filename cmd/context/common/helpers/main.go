@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"devlab/lib/files"
+	"errors"
 	"sort"
 	"strconv"
 
@@ -101,5 +102,41 @@ func GetMainConfig() (config map[string]map[string]string, err error) {
 	if config["paths"]["contexts"] == "" {
 		return make(map[string]map[string]string), contextErrors.ErrNotDefinedContextsPath
 	}
+	return
+}
+
+// GetApplicationServices returns application services settings by merging default template settings
+// and context level settings
+func GetApplicationServices(contextName string, context, config map[string]map[string]string,
+	configuration map[string]map[string]string) (applicationServices map[string]map[string]string, err error) {
+
+	applicationServices = make(map[string]map[string]string)
+
+	templatesPath := GetValueFromContextOrDefault(context, config, "paths", "context-templates")
+	applicationServicesTemplate := GetValueFromContextOrDefault(context, configuration, "application-services", "template")
+	applicationServicesTemplatePath := "./" + templatesPath + "/application-services/" + applicationServicesTemplate
+
+	isAplicationServicesDirExists, _ := files.IsExists(applicationServicesTemplatePath)
+	if !isAplicationServicesDirExists {
+		err = errors.New("applications services directory does not exist")
+		return
+	}
+
+	applicationServicesFromTemplate, err := files.ReadTwoLevelYaml(applicationServicesTemplatePath)
+	if err != nil {
+		return
+	}
+
+	// applications services settings equal template settings as default
+	applicationServices = applicationServicesFromTemplate
+
+	// checking if application-services settings from context exist and merge its if yes
+	applicationServicesContextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/application-services.settings.yml"
+	isAplicationServicesContextSettingsExists, _ := files.IsExists(applicationServicesContextSettingsPath)
+	if isAplicationServicesContextSettingsExists {
+		applicationServicesFromContext, _ := files.ReadTwoLevelYaml(applicationServicesContextSettingsPath)
+		applicationServices = MergeMaps(applicationServicesFromContext, applicationServicesFromTemplate)
+	}
+
 	return
 }

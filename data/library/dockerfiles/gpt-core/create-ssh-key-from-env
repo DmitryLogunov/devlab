@@ -1,0 +1,6 @@
+echo $PRIVATE_KEY > /root/.ssh/id_rsa
+sed -i "s/-----BEGIN RSA PRIVATE KEY----- /-----BEGINRSAPRIVATEKEY-----\\n/g" /root/.ssh/id_rsa
+sed -i "s/ -----END RSA PRIVATE KEY-----/\\n-----ENDRSAPRIVATEKEY-----/g"  /root/.ssh/id_rsa
+sed -i s/' '/\\n/g /root/.ssh/id_rsa
+sed -i "s/-----ENDRSAPRIVATEKEY-----/-----END RSA PRIVATE KEY-----/g" /root/.ssh/id_rsa
+sed -i "s/-----BEGINRSAPRIVATEKEY-----/-----BEGIN RSA PRIVATE KEY-----/g" /root/.ssh/id_rsa

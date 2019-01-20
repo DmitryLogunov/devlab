@@ -10,9 +10,12 @@ RUN apk update && \
     git \
     yarn --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
+ADD ./create-ssh-key-from-env /root/create-ssh-key-from-env
+
 RUN echo '{"config": {"unsafe-perm":true } }' >> ~/.npmrc && \
     echo "mkdir /root/.ssh" >> ~/entrypoint && \
-    echo "echo \$PRIVATE_KEY > /root/.ssh/id_rsa" >> ~/entrypoint && \
+    echo "chmod +x /root/create-ssh-key-from-env" >> ~/entrypoint && \
+    echo "/root/create-ssh-key-from-env" >> ~/entrypoint && \
     echo "chmod 0600 /root/.ssh/id_rsa" >> ~/entrypoint && \ 
     echo "ssh-keyscan -H github.com >> /root/.ssh/known_hosts" >> ~/entrypoint && \
     echo "(cd /usr/src/app && sh /usr/src/app/install)" >> ~/entrypoint && \

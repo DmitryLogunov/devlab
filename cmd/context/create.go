@@ -30,12 +30,6 @@ func Create(contextName string) (err error) {
 		return
 	}
 
-	// creates builing.settings.yml
-	err = createContextBlockSettingsFile(contextName, config, "building")
-	if err != nil {
-		return
-	}
-
 	// creates deploying.settings.yml
 	err = createContextBlockSettingsFile(contextName, config, "deploying")
 	if err != nil {
@@ -48,8 +42,14 @@ func Create(contextName string) (err error) {
 		return
 	}
 
+	// creates building.settings.yml
+	err = createBuildingSettingsFile(contextName, config)
+	if err != nil {
+		return
+	}
+
 	// creates application-services.settings.yml
-	err = createApllicationsServicesContextSettingsFile(contextName, config)
+	err = createApplicationsServicesSettingsFile(contextName, config)
 
 	return
 }
@@ -74,7 +74,7 @@ func initContextToCreate(contextName string) (config map[string]map[string]strin
 
 	contextDir := "./" + config["paths"]["contexts"] + "/" + contextName
 	if isContextDirExists, _ := files.IsExists(contextDir); !isContextDirExists {
-		files.CreateDir("./" + contextDir)
+		files.CreateDir(contextDir)
 	}
 
 	contextSettingsPath = contextDir + "/context.settings.yml"
@@ -181,7 +181,7 @@ func paramsFilter(defaultValuesMap map[string]string) func(param string, value *
 }
 
 // createContextBlockSettingsFile creates 'application-services.settings.yml' file with settings of context block
-func createApllicationsServicesContextSettingsFile(contextName string,
+func createApplicationsServicesSettingsFile(contextName string,
 	config map[string]map[string]string) (err error) {
 
 	configuration, err := contextHelpers.GetConfiguration(config)
@@ -202,6 +202,83 @@ func createApllicationsServicesContextSettingsFile(contextName string,
 	}
 
 	err = createContextBlockSettingsFile(contextName, config, "application-services", paramsFilter(defaultValues))
+
+	return
+}
+
+//
+// createBuildingSettingsFile creates 'building.settings.yml' file with settings of context block
+func createBuildingSettingsFile(contextName string,
+	config map[string]map[string]string) (err error) {
+
+	configuration, err := contextHelpers.GetConfiguration(config)
+	if err != nil {
+		return
+	}
+
+	if configuration["building"]["template"] == "" {
+		errInfo := fmt.Sprintf("context: template for block 'building' is not defined; couldn't create file settings for this block")
+		return errors.New(errInfo)
+	}
+
+	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/context.settings.yml"
+	context, err := files.ReadTwoLevelYaml(contextSettingsPath)
+	if err != nil {
+		return
+	}
+
+	templatesPath := contextHelpers.GetValueFromContextOrDefault(context, config, "paths", "context-templates")
+
+	buildingTemplate := contextHelpers.GetValueFromContextOrDefault(context, configuration, "building", "template")
+	buildingTemplatePath := "./" + templatesPath + "/building/" + buildingTemplate
+	buildingTemplateSettings, err := files.ReadTwoLevelYaml(buildingTemplatePath)
+	if err != nil {
+		return err
+	}
+	defaultBuildingSettings := buildingTemplateSettings["default"]
+
+	buildingParametersPath := "./" + templatesPath + "/building/parameters.yml"
+	buildingParameters, err := contextHelpers.GetSortedKeysFromYaml(buildingParametersPath)
+	if err != nil {
+		return err
+	}
+
+	buildingSettingsFilePath := "./" + config["paths"]["contexts"] + "/" + contextName + "/building.settings.yml"
+	isContextSettingsFileExists, _ := files.IsExists(buildingSettingsFilePath)
+	if isContextSettingsFileExists {
+		files.Delete(buildingSettingsFilePath)
+	}
+
+	applicationServices, err := contextHelpers.GetApplicationServices(contextName, context, config, configuration)
+	if err != nil {
+		return
+	}
+
+	// fill building settings map
+	for item := range applicationServices {
+		_, err = files.WriteAppendFileWithIndent(buildingSettingsFilePath, item+": ", 0)
+		if err != nil {
+			return
+		}
+
+		for i := 0; i < len(buildingParameters); i++ {
+			param := buildingParameters[i].Key
+			value := ""
+
+			if configuration["building"][param] != "" {
+				value = configuration["building"][param]
+			}
+
+			if defaultBuildingSettings[param] != "" {
+				value = defaultBuildingSettings[param]
+			}
+
+			_, err = files.WriteAppendFileWithIndent(buildingSettingsFilePath, param+": "+value, 2)
+			if err != nil {
+				return
+			}
+		}
+	}
 
 	return
 }

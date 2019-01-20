@@ -2,6 +2,7 @@ package main
 
 import (
 	"devlab/cmd/context"
+	contextErrors "devlab/cmd/context/common/errors"
 	createDockerCompose "devlab/cmd/create-docker-compose"
 	"fmt"
 	"os"
@@ -19,7 +20,9 @@ func main() {
 			break
 		case "install":
 			if err := context.Install(os.Args[3]); err != nil {
-				fmt.Println(err)
+				if err != contextErrors.ErrContextIsNotCreated {
+					fmt.Println(err)
+				}
 				os.Exit(1)
 			}
 		}

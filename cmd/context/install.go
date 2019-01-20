@@ -4,7 +4,6 @@ import (
 	"devlab/lib/files"
 	"devlab/lib/logger"
 	"devlab/lib/services"
-	"errors"
 	"strings"
 
 	contextErrors "devlab/cmd/context/common/errors"
@@ -21,7 +20,7 @@ func Install(contextName string) (err error) {
 		return
 	}
 
-	applicationServices, err := getApplicationServices(contextName, context, config, configuration)
+	applicationServices, err := contextHelpers.GetApplicationServices(contextName, context, config, configuration)
 	if err != nil {
 		return
 	}
@@ -31,6 +30,12 @@ func Install(contextName string) (err error) {
 		"application-services", "base-branch")
 	err = cloneAndRefreshApplicationServicesGitRepo(contextServicesDir, taskBaseBranch,
 		context, applicationServices)
+
+	for serviceName := range applicationServices {
+		if err = BuildService(contextName, serviceName); err != nil {
+			break
+		}
+	}
 
 	return
 }
@@ -84,7 +89,7 @@ func checkAndCreateContextSettingsIfNotExists(contextName string,
 		logger.Warn(`Context '%s' is not created! 
    New context will be created: %s. 
    The installing process has been stoped.  
-   You should configure new context and start installation again.`, contextName, contextSettingsPath)
+   You should configure new context and start installation again.\n`, contextName, contextDir)
 
 		if err = Create(contextName); err != nil {
 			return
@@ -92,42 +97,6 @@ func checkAndCreateContextSettingsIfNotExists(contextName string,
 
 		return contextSettingsPath, contextErrors.ErrContextIsNotCreated
 	}
-	return
-}
-
-// getApplicationServices returns application services settings by merging default template settings
-// and context level settings
-func getApplicationServices(contextName string, context, config map[string]map[string]string,
-	configuration map[string]map[string]string) (applicationServices map[string]map[string]string, err error) {
-
-	applicationServices = make(map[string]map[string]string)
-
-	templatesPath := contextHelpers.GetValueFromContextOrDefault(context, config, "paths", "context-templates")
-	applicationServicesTemplate := contextHelpers.GetValueFromContextOrDefault(context, configuration, "application-services", "template")
-	applicationServicesTemplatePath := "./" + templatesPath + "/application-services/" + applicationServicesTemplate
-
-	isAplicationServicesDirExists, _ := files.IsExists(applicationServicesTemplatePath)
-	if !isAplicationServicesDirExists {
-		err = errors.New("applications services directory does not exist")
-		return
-	}
-
-	applicationServicesFromTemplate, err := files.ReadTwoLevelYaml(applicationServicesTemplatePath)
-	if err != nil {
-		return
-	}
-
-	// applications services settings equal template settings as default
-	applicationServices = applicationServicesFromTemplate
-
-	// checking if application-services settings from context exist and merge its if yes
-	applicationServicesContextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/application-services.settings.yml"
-	isAplicationServicesContextSettingsExists, _ := files.IsExists(applicationServicesContextSettingsPath)
-	if isAplicationServicesContextSettingsExists {
-		applicationServicesFromContext, _ := files.ReadTwoLevelYaml(applicationServicesContextSettingsPath)
-		applicationServices = contextHelpers.MergeMaps(applicationServicesFromContext, applicationServicesFromTemplate)
-	}
-
 	return
 }
 
