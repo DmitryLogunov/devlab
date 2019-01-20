@@ -28,6 +28,7 @@ func Install(contextName string) (err error) {
 	// clone and refresh all application-services repositories from git server
 	taskBaseBranch := contextHelpers.GetValueFromContextOrDefault(context, configuration,
 		"application-services", "base-branch")
+
 	err = cloneAndRefreshApplicationServicesGitRepo(contextServicesDir, taskBaseBranch,
 		context, applicationServices)
 

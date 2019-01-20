@@ -68,6 +68,7 @@ func RefreshGitRepo(contextServicesDir, serviceName,
 // CheckoutOrCreate creates new git branch or checkout it if branch exists
 func CheckoutOrCreate(contextServicesDir string, serviceName string,
 	checkoutBranch string, baseBranch string, context map[string]map[string]string) {
+
 	serviceDir, _ := files.AbsolutePath(contextServicesDir + "/" + serviceName)
 	numCheckoutBranchExistsAsRemoteStr, _ := exec.GitCommand(serviceDir, "git branch -r | grep -c "+checkoutBranch)
 	currentBranch, _ := exec.GitCommand(serviceDir, "git symbolic-ref --short HEAD")

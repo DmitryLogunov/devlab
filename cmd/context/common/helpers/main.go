@@ -3,6 +3,7 @@ package helpers
 import (
 	"devlab/lib/files"
 	"errors"
+	"path/filepath"
 	"sort"
 	"strconv"
 
@@ -25,14 +26,23 @@ func GetConfiguration(config map[string]map[string]string) (configuration map[st
 		return make(map[string]map[string]string), contextErrors.ErrCouldntParseConfiguration
 	}
 
+	configurationTemlateDir := filepath.Dir(configurationTemplatesPath)
+	defaultConfiguratonPath := configurationTemlateDir + "/default.yml"
+	if isDefaultConfigurationExists, _ := files.IsExists(defaultConfiguratonPath); isDefaultConfigurationExists {
+		defaultConfiguration, err := files.ReadTwoLevelYaml(defaultConfiguratonPath)
+		if err != nil {
+			return make(map[string]map[string]string), contextErrors.ErrCouldntParseConfiguration
+		}
+		configuration = MergeMaps(configuration, defaultConfiguration)
+	}
+
 	return
 }
 
 // GetValueFromContextOrDefault returns value form context map accordingly topLevel ans subLevel keys.
 // If context map value is empty then return value from default map
 func GetValueFromContextOrDefault(context map[string]map[string]string,
-	defaultConfig map[string]map[string]string,
-	topLevelKey, subLevelKey string) (value string) {
+	defaultConfig map[string]map[string]string, topLevelKey, subLevelKey string) (value string) {
 
 	if context[topLevelKey][subLevelKey] != "" {
 		return context[topLevelKey][subLevelKey]
@@ -131,7 +141,8 @@ func GetApplicationServices(contextName string, context, config map[string]map[s
 	applicationServices = applicationServicesFromTemplate
 
 	// checking if application-services settings from context exist and merge its if yes
-	applicationServicesContextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/application-services.settings.yml"
+	levelFolder := config["configuration-levels"]["applications"]
+	applicationServicesContextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/application-services.settings.yml"
 	isAplicationServicesContextSettingsExists, _ := files.IsExists(applicationServicesContextSettingsPath)
 	if isAplicationServicesContextSettingsExists {
 		applicationServicesFromContext, _ := files.ReadTwoLevelYaml(applicationServicesContextSettingsPath)
