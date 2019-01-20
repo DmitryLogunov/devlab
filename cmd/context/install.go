@@ -77,7 +77,7 @@ func checkAndCreateContextSettingsIfNotExists(contextName string,
 	config map[string]map[string]string) (contextSettingsPath string, err error) {
 
 	contextDir := "./" + config["paths"]["contexts"] + "/" + contextName
-	levelFolder := config["configuration-levels"]["applications"]
+	levelFolder := config["configuration-levels"]["application"]
 
 	contextSettingsPath = contextDir + "/" + levelFolder + "/context.settings.yml"
 	isContextDirExists, _ := files.IsExists(contextDir)
@@ -99,7 +99,7 @@ func checkAndCreateContextSettingsIfNotExists(contextName string,
 
 // getContextServicesDir returns context servcies directory
 func getContextServicesDir(contextName string, config map[string]map[string]string) (contextServicesDir string, err error) {
-	contextServicesDir = config["paths"]["contexts"] + "/" + contextName + "/services"
+	contextServicesDir = config["paths"]["contexts"] + "/" + contextName + "/sources"
 	isContextServicesDirExists, err := files.IsExists("./" + contextServicesDir)
 	if err != nil {
 		return

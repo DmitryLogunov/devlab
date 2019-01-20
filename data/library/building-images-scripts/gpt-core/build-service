@@ -6,7 +6,7 @@ BUILDING_IMAGE=node-gpt-core-base-1
 
 # PRIVATE_KEY_PATH=/home/lynx/.ssh/id_rsa
 # SSH_CONFIG_PATH=/data/projects/go/src/devlab/data/library/building-images-scripts/gpt-core/ssh.config
-SERVICE_DIR=/data/projects/go/src/devlab/contexts/test-context/services
+SERVICE_DIR=/data/projects/go/src/devlab/contexts/test-context/sources
 INSTALL_SCRIPT=/data/projects/go/src/devlab/data/library/building-images-scripts/gpt-core/build-gpt-core-js-with-deps
 SERVICE_NAME=dlp-gateway-command
 BRANCH=develop

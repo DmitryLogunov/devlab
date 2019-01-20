@@ -47,12 +47,12 @@ type ContextSettingsSystemServices struct {
 }
 
 type ContextSettingsApplicationServices struct {
-	Configure                        string
-	BaseBranch                       string
-	FeatureBranchNaming              string
-	MountSourceCodeVolumeOnDeploying string
-	DockerRegistryTag                string
-	Template                         string
+	Configure           string
+	BaseBranch          string
+	FeatureBranchNaming string
+	Sync                string
+	DockerRegistryTag   string
+	Template            string
 }
 
 type ContextSettings struct {

@@ -89,7 +89,7 @@ func initContextToCreate(contextName string) (config, configuration map[string]m
 		files.CreateDir(contextDir)
 	}
 
-	levelFolder := config["configuration-levels"]["applications"]
+	levelFolder := config["configuration-levels"]["application"]
 	contextSettingsPath = contextDir + "/" + levelFolder + "/context.settings.yml"
 	defaultSettingsPath = "./" + config["paths"]["context-templates"] + "/default-settings.yml"
 
@@ -123,7 +123,7 @@ func createContextBlockSettingsFile(contextName string, config map[string]map[st
 		return errors.New(errInfo)
 	}
 
-	levelFolder := config["configuration-levels"]["applications"]
+	levelFolder := config["configuration-levels"]["application"]
 
 	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/context.settings.yml"
 
@@ -238,7 +238,7 @@ func createBuildingSettingsFile(contextName string,
 		return errors.New(errInfo)
 	}
 
-	levelFolder := config["configuration-levels"]["applications"]
+	levelFolder := config["configuration-levels"]["application"]
 
 	contextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/context.settings.yml"
 	context, err := files.ReadTwoLevelYaml(contextSettingsPath)
@@ -329,8 +329,6 @@ func getContextSettings(contextName string,
 		Ssh: contextTypes.ContextSettingsSsh{
 			PrivateKeyPath: configuration["ssh"]["private-key-path"],
 			SshConfig:      configuration["ssh"]["ssh-config"]},
-		Paths: contextTypes.ContextSettingsPaths{
-			Templates: config["paths"]["context-templates"]},
 		Building: contextTypes.ContextSettingsBuilding{
 			Configure:               configuration["building"]["configure"],
 			BuildingScriptsPath:     configuration["building"]["building-scripts-path"],
@@ -345,12 +343,12 @@ func getContextSettings(contextName string,
 			Configure: configuration["system-services"]["configure"],
 			Template:  configuration["system-services"]["template"]},
 		ApplicationServices: contextTypes.ContextSettingsApplicationServices{
-			Configure:                        configuration["application-services"]["configure"],
-			BaseBranch:                       configuration["application-services"]["base-branch"],
-			FeatureBranchNaming:              configuration["application-services"]["feature-branch-naming"],
-			MountSourceCodeVolumeOnDeploying: configuration["application-services"]["mount-source-code-volume-on-deploying"],
-			DockerRegistryTag:                configuration["application-services"]["docker-registry-tag"],
-			Template:                         configuration["application-services"]["template"]}}
+			Configure:           configuration["application-services"]["configure"],
+			BaseBranch:          configuration["application-services"]["base-branch"],
+			FeatureBranchNaming: configuration["application-services"]["feature-branch-naming"],
+			Sync:                configuration["application-services"]["sync"],
+			DockerRegistryTag:   configuration["application-services"]["docker-registry-tag"],
+			Template:            configuration["application-services"]["template"]}}
 
 	return
 }

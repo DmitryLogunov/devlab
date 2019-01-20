@@ -141,7 +141,7 @@ func GetApplicationServices(contextName string, context, config map[string]map[s
 	applicationServices = applicationServicesFromTemplate
 
 	// checking if application-services settings from context exist and merge its if yes
-	levelFolder := config["configuration-levels"]["applications"]
+	levelFolder := config["configuration-levels"]["application"]
 	applicationServicesContextSettingsPath := "./" + config["paths"]["contexts"] + "/" + contextName + "/" + levelFolder + "/application-services.settings.yml"
 	isAplicationServicesContextSettingsExists, _ := files.IsExists(applicationServicesContextSettingsPath)
 	if isAplicationServicesContextSettingsExists {

@@ -8,7 +8,7 @@ git:
   server-host: git@github.com:City-and-Guilds-Group/
   auto-push: false      
 application-services:
-  level: applications
+  level: application
   base-branch: develop
   feature-branch-naming: context-name 
   docker-registry-tag: release.2.5.0
@@ -21,7 +21,7 @@ deploying:
   template: default.yml     
 building:
   configure: false
-  level: applications 
+  level: application 
   building-scripts-path: data/library/building-images-scripts/gpt-core
   building-dockerfiles-path: data/library/dockerfiles/gpt-core       
   private-key-path: /home/lynx/.ssh/id_rsa 

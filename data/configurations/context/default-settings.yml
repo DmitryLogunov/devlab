@@ -19,8 +19,6 @@ ssh:
   private-key-path: {{ if .Ssh.PrivateKeyPath }}{{ .Ssh.PrivateKeyPath }}{{ end }}
   ssh-config: {{ if .Ssh.SshConfig }}{{ .Ssh.SshConfig }}{{ end }} 		
 {{- end }}  
-paths:
-  templates: {{ if .Paths.Templates }}{{ .Paths.Templates }}{{ end }}
 {{- if ne .Building.Configure "false" }}  
 building: 
   version: 
@@ -43,7 +41,7 @@ system-services:
 application-services: 
   base-branch: {{ if .ApplicationServices.BaseBranch }}{{ .ApplicationServices.BaseBranch }}{{ end }} 
   feature-branch-naming: {{ if .ApplicationServices.FeatureBranchNaming }}{{ .ApplicationServices.FeatureBranchNaming }}{{ end }}
-  mount-source-code-volume-on-deploying: {{ if .ApplicationServices.MountSourceCodeVolumeOnDeploying }}{{ .ApplicationServices.MountSourceCodeVolumeOnDeploying }}{{ end }}
+  sync: {{ if .ApplicationServices.Sync }}{{ .ApplicationServices.Sync }}{{ end }}
   docker-registry-tag: {{ if .ApplicationServices.DockerRegistryTag }}{{ .ApplicationServices.DockerRegistryTag }}{{ end }} 
   template: {{ if .ApplicationServices.Template }}{{ .ApplicationServices.Template }}{{ end }}
 {{- end }}  
